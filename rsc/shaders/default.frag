@@ -2,7 +2,7 @@
 
 in vec3 fragmentColor;
 
-out vec3 color;
+layout(location = 0) out vec3 color;
 
 void main(){
 	color = fragmentColor;
