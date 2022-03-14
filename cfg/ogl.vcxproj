@@ -27,12 +27,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\inc\controls.h" />
     <ClInclude Include="..\inc\main.h" />
     <ClInclude Include="..\inc\objloader.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\controls.cpp" />
     <ClCompile Include="..\src\main.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

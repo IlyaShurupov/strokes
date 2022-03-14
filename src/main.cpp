@@ -14,8 +14,6 @@
 #include "osystem.h"
 #include "common.h"
 
-#include "controls.h"
-
 void GLAPIENTRY
 MessageCallback(GLenum source,
 	GLenum type,
@@ -262,29 +260,15 @@ struct ogl_color_data {
 
 struct ogl_mesh {
 
-	GLfloat g_vertex_buffer_data[9] = {
-	 0.0f, 0.0f, 0.0f,
-	 1.0f, 0.0f, 0.0f,
-	 0.0f, 1.0f, 0.0f,
-	};
-
-	GLfloat g_color_buffer_data[9] = {
-	 1.0f, 0.f, 0.0f,
-	 0.f, 1.0f, 0.0f,
-	 0.0f,  0.0f, 1.0f,
-	};
-
-	//Array<ogl_vertex_data> g_vertex_buffer_data;
+	Array<ogl_vertex_data> g_vertex_buffer_data;
 	Array<uint4> g_trig_idxs;
 
-	//Array<ogl_color_data> g_color_buffer_data;
+	Array<ogl_color_data> g_color_buffer_data;
 
 	glm::mat4 MTXmodel = glm::mat4(1.f);
 
 	ogl_mesh() {
 	}
-
-	/*
 
 	void load(string path) {
 		objl::Loader loader;
@@ -306,13 +290,12 @@ struct ogl_mesh {
 
 		g_color_buffer_data.Reserve(mesh.Vertices.size());
 		for (alni i = 0; i < mesh.Vertices.size(); i++) {
-			g_color_buffer_data[i].X = 1;
-			g_color_buffer_data[i].Y = 0;
-			g_color_buffer_data[i].Z = 0;
+			g_color_buffer_data[i].X = randf();
+			g_color_buffer_data[i].Y = randf();
+			g_color_buffer_data[i].Z = randf();
 		}
 
 	}
-	*/
 
 	glm::mat4 get_MPV(ogl_camera& cam) {
 		return cam.get_cam_proj_mat() * cam.get_cam_view_mat() * MTXmodel;
@@ -326,7 +309,7 @@ int main() {
 	ogl_mesh mesh;
 	ogl_camera cam;
 
-	//mesh.load("../rsc/cube.obj");
+	mesh.load("../rsc/cube.obj");
 
 	GLuint programID = LoadShaders("../rsc/shaders/default.vert", "../rsc/shaders/default.frag");
 	glUseProgram(programID);
@@ -342,18 +325,18 @@ int main() {
 	GLuint colorbuffer;
 	glGenBuffers(1, &colorbuffer);
 
-	//GLuint elementbuffer;
-	//glGenBuffers(1, &elementbuffer);
+	GLuint elementbuffer;
+	glGenBuffers(1, &elementbuffer);
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(mesh.g_vertex_buffer_data), mesh.g_vertex_buffer_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(mesh.g_vertex_buffer_data[0]) * mesh.g_vertex_buffer_data.length, mesh.g_vertex_buffer_data.buff, GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(mesh.g_color_buffer_data), mesh.g_color_buffer_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(mesh.g_color_buffer_data[0]) * mesh.g_color_buffer_data.length, mesh.g_color_buffer_data.buff, GL_STATIC_DRAW);
 
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint4) * mesh.g_trig_idxs.length, mesh.g_trig_idxs.buff, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(mesh.g_trig_idxs[0]) * mesh.g_trig_idxs.length, mesh.g_trig_idxs.buff, GL_STATIC_DRAW);
 
 	do {
 		window.begin_draw();
@@ -385,13 +368,14 @@ int main() {
 			(void*)0
 		);
 
-
+		/*
 		// Draw the triangle !
 		glDrawArrays(GL_TRIANGLES, 0, 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
 		glDisableVertexAttribArray(0);
+		*/
 
-		/*
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
+		
 		// Draw the triangles !
 		glDrawElements(
 			GL_TRIANGLES,      // mode
@@ -399,7 +383,6 @@ int main() {
 			GL_UNSIGNED_INT,   // type
 			(void*)0           // element array buffer offset
 		);
-		*/
 
 	} while (window.end_draw());
 }
