@@ -15,17 +15,8 @@
 #include "common.h"
 
 void GLAPIENTRY
-MessageCallback(GLenum source,
-	GLenum type,
-	GLuint id,
-	GLenum severity,
-	GLsizei length,
-	const GLchar* message,
-	const void* userParam)
-{
-	fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-		(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-		type, severity, message);
+MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+	fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n", (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""), type, severity, message);
 }
 
 
@@ -82,13 +73,20 @@ struct ogl_window {
 	}
 
 	void begin_draw() {
-		
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//glViewport(0, 0, 1024, 768); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+		// Clear the screen
+		glClearColor(1, 0, 0, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	bool end_draw() {
+	bool Close() {
+		return (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(window) == 0);
+	}
+
+	void end_draw() {
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-		return (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(window) == 0);
 	}
 
 	~ogl_window() {
@@ -169,6 +167,172 @@ GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path)
 	return ProgramID;
 }
 
+
+
+struct ogl_frame_buffer {
+
+	GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+
+	GLuint FramebufferName;
+
+	GLuint renderedTexture;
+	GLuint depthrenderbuffer;
+
+	glm::vec2 size = glm::vec2(500, 500);
+
+	ogl_frame_buffer() {
+		// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
+		FramebufferName = 0;
+		glGenFramebuffers(1, &FramebufferName);
+		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+
+		// The texture we're going to render to
+		renderedTexture;
+		glGenTextures(1, &renderedTexture);
+
+		// "Bind" the newly created texture : all future texture functions will modify this texture
+		glBindTexture(GL_TEXTURE_2D, renderedTexture);
+
+		// Give an empty image to OpenGL ( the last "0" )
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, size.x, size.y, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+
+		// Poor filtering. Needed !
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+		// The depth buffer
+		glGenRenderbuffers(1, &depthrenderbuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, size.x, size.y);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+
+		// Set "renderedTexture" as our colour attachement #0
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
+
+		// Set the list of draw buffers.
+		//GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+		glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+
+		// Always check that our framebuffer is ok
+		assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+	}
+
+	void begin_draw() {
+		// Render to our framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+		glViewport(0, 0, size.x, size.y); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+		glClearColor(0, 0, 0, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glUseProgram(0);
+	}
+
+	void end_draw() {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glUseProgram(0);
+	}
+
+
+	void test_draw() {
+
+	}
+
+	~ogl_frame_buffer() {
+		glDeleteFramebuffers(1, &FramebufferName);
+		glDeleteTextures(1, &renderedTexture);
+		glDeleteRenderbuffers(1, &depthrenderbuffer);
+	}
+};
+
+struct ogl_texture_drawer {
+
+	GLuint quad_VertexArrayID;
+	GLuint quad_vertexbuffer;
+	GLuint quad_programID;
+	GLuint texID;
+	GLuint timeID;
+
+	const GLfloat g_quad_vertex_buffer_data[18] = {
+		-1.0f, -1.0f, 0.0f,
+		1.0f, -1.0f, 0.0f,
+		-1.0f,  1.0f, 0.0f,
+		-1.0f,  1.0f, 0.0f,
+		1.0f, -1.0f, 0.0f,
+		1.0f,  1.0f, 0.0f,
+	};
+
+	ogl_texture_drawer() {
+		// The fullscreen quad's FBO
+		glGenVertexArrays(1, &quad_VertexArrayID);
+		glBindVertexArray(quad_VertexArrayID);
+
+		glGenBuffers(1, &quad_vertexbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+
+		// Create and compile our GLSL program from the shaders
+		quad_programID = LoadShaders("../rsc/shaders/Passthrough.vert", "../rsc/shaders/Texture.frag");
+		texID = glGetUniformLocation(quad_programID, "renderedTexture");
+		timeID = glGetUniformLocation(quad_programID, "time");
+	}
+
+	void draw_texture(GLuint from, GLuint to_tex) {
+		// Render to the screen
+		glBindFramebuffer(GL_FRAMEBUFFER, from);
+		glViewport(0, 0, 1024, 768); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+		// Clear the screen
+		glClearColor(1, 0, 0, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// Use our shader
+		glUseProgram(quad_programID);
+
+		// Bind our texture in Texture Unit 0
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, to_tex);
+		// Set our "renderedTexture" sampler to use Texture Unit 0
+		glUniform1i(texID, 0);
+
+		glUniform1f(timeID, (float)(glfwGetTime() * 10.0f));
+
+		// 1rst attribute buffer : vertices
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+		glVertexAttribPointer(
+			0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+			3,                  // size
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*)0            // array buffer offset
+		);
+
+		// Draw the triangles !
+		glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
+
+		glDisableVertexAttribArray(0);
+	}
+
+	~ogl_texture_drawer() {
+		glDeleteBuffers(1, &quad_vertexbuffer);
+		glDeleteProgram(quad_programID);
+		glDeleteVertexArrays(1, &quad_VertexArrayID);
+	}
+};
+
+
+
+struct ogl_vertex_data {
+	GLfloat X;
+	GLfloat Y;
+	GLfloat Z;
+};
+
+struct ogl_color_data {
+	GLfloat X = 1;
+	GLfloat Y = 1;
+	GLfloat Z = 1;
+};
+
 struct ogl_camera {
 
 	glm::vec3 pos;
@@ -246,18 +410,6 @@ struct ogl_camera {
 	}
 };
 
-struct ogl_vertex_data {
-	GLfloat X;
-	GLfloat Y;
-	GLfloat Z;
-};
-
-struct ogl_color_data {
-	GLfloat X = 1;
-	GLfloat Y = 1;
-	GLfloat Z = 1;
-};
-
 struct ogl_mesh {
 
 	Array<ogl_vertex_data> g_vertex_buffer_data;
@@ -267,7 +419,26 @@ struct ogl_mesh {
 
 	glm::mat4 MTXmodel = glm::mat4(1.f);
 
+	GLuint programID;
+	GLuint MatrixID;
+	GLuint VertexArrayID;
+	GLuint vertexbuffer;
+	GLuint colorbuffer;
+	GLuint elementbuffer;
+
 	ogl_mesh() {
+		programID = LoadShaders("../rsc/shaders/default.vert", "../rsc/shaders/default.frag");
+		glUseProgram(programID);
+		MatrixID = glGetUniformLocation(programID, "MVP");
+
+		glGenVertexArrays(1, &VertexArrayID);
+		glBindVertexArray(VertexArrayID);
+
+		glGenBuffers(1, &vertexbuffer);
+
+		glGenBuffers(1, &colorbuffer);
+
+		glGenBuffers(1, &elementbuffer);
 	}
 
 	void load(string path) {
@@ -297,127 +468,26 @@ struct ogl_mesh {
 
 	}
 
+	void bind_buffers() {
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data[0]) * g_vertex_buffer_data.length, g_vertex_buffer_data.buff, GL_STATIC_DRAW);
+
+		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data[0]) * g_color_buffer_data.length, g_color_buffer_data.buff, GL_STATIC_DRAW);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(g_trig_idxs[0]) * g_trig_idxs.length, g_trig_idxs.buff, GL_STATIC_DRAW);
+	}
+
 	glm::mat4 get_MPV(ogl_camera& cam) {
 		return cam.get_cam_proj_mat() * cam.get_cam_view_mat() * MTXmodel;
 	}
-};
 
-static const GLfloat g_quad_vertex_buffer_data[] = {
-		-1.0f, -1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f,
-		-1.0f,  1.0f, 0.0f,
-		-1.0f,  1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f,
-		1.0f,  1.0f, 0.0f,
-};
-
-//struct ogl_frame
-
-int main() {
-
-	opengl ogl;
-	ogl_window window;
-	ogl_mesh mesh;
-	ogl_camera cam;
-
-	mesh.load("../rsc/cube.obj");
-
-	GLuint programID = LoadShaders("../rsc/shaders/default.vert", "../rsc/shaders/default.frag");
-	glUseProgram(programID);
-	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
-
-	GLuint VertexArrayID;
-	glGenVertexArrays(1, &VertexArrayID);
-	glBindVertexArray(VertexArrayID);
-
-	GLuint vertexbuffer;
-	glGenBuffers(1, &vertexbuffer);
-
-	GLuint colorbuffer;
-	glGenBuffers(1, &colorbuffer);
-
-	GLuint elementbuffer;
-	glGenBuffers(1, &elementbuffer);
-
-
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(mesh.g_vertex_buffer_data[0]) * mesh.g_vertex_buffer_data.length, mesh.g_vertex_buffer_data.buff, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(mesh.g_color_buffer_data[0]) * mesh.g_color_buffer_data.length, mesh.g_color_buffer_data.buff, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(mesh.g_trig_idxs[0]) * mesh.g_trig_idxs.length, mesh.g_trig_idxs.buff, GL_STATIC_DRAW);
-
-
-	// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
-	GLuint FramebufferName = 0;
-	glGenFramebuffers(1, &FramebufferName);
-	glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-
-	// The texture we're going to render to
-	GLuint renderedTexture;
-	glGenTextures(1, &renderedTexture);
-
-	// "Bind" the newly created texture : all future texture functions will modify this texture
-	glBindTexture(GL_TEXTURE_2D, renderedTexture);
-
-	// Give an empty image to OpenGL ( the last "0" )
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1024, 768, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-
-	// Poor filtering. Needed !
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-	// The depth buffer
-	GLuint depthrenderbuffer;
-	glGenRenderbuffers(1, &depthrenderbuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1024, 768);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
-
-	// Set "renderedTexture" as our colour attachement #0
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
-
-	// Set the list of draw buffers.
-	GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-	glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
-	
-	// Always check that our framebuffer is ok
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		return false;
-
-
-	// The fullscreen quad's FBO
-	GLuint quad_VertexArrayID;
-	glGenVertexArrays(1, &quad_VertexArrayID);
-	glBindVertexArray(quad_VertexArrayID);
-
-	GLuint quad_vertexbuffer;
-	glGenBuffers(1, &quad_vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
-
-	// Create and compile our GLSL program from the shaders
-	GLuint quad_programID = LoadShaders("../rsc/shaders/Passthrough.vert", "../rsc/shaders/Texture.frag");
-	GLuint texID = glGetUniformLocation(quad_programID, "renderedTexture");
-	GLuint timeID = glGetUniformLocation(quad_programID, "time");
-
-	do {
-		window.begin_draw();
-
-		// Render to our framebuffer
-		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-		glViewport(0, 0, 1024, 768); // Render on the whole framebuffer, complete from the lower left corner to the upper right
-		glClearColor(0, 0, 0, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+	void draw_mesh(ogl_camera* cam) {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
-		
-		cam.update(window.window);
 
 		glUseProgram(programID);
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mesh.get_MPV(cam)[0][0]);
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &get_MPV(*cam)[0][0]);
 
 		// 1st attribute buffer : vertices
 		glEnableVertexAttribArray(0);
@@ -442,64 +512,52 @@ int main() {
 			(void*)0
 		);
 
-		// Draw the triangles !
-		glDrawElements(
-			GL_TRIANGLES,      // mode
-			mesh.g_trig_idxs.length,    // count
-			GL_UNSIGNED_INT,   // type
-			(void*)0           // element array buffer offset
-		);
+		// Draw the triangles ! // mode. count. type. element. array buffer offset
+		glDrawElements(GL_TRIANGLES, g_trig_idxs.length, GL_UNSIGNED_INT, (void*)0);
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
+	}
+
+	~ogl_mesh() {
+		glDeleteBuffers(1, &vertexbuffer);
+		glDeleteBuffers(1, &elementbuffer);
+		glDeleteProgram(programID);
+		glDeleteVertexArrays(1, &VertexArrayID);
+	}
+};
 
 
-		// Render to the screen
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, 1024, 768); // Render on the whole framebuffer, complete from the lower left corner to the upper right
-		// Clear the screen
-		glClearColor(1, 0, 0, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+int main() {
 
-		// Use our shader
-		glUseProgram(quad_programID);
+	opengl ogl;
+	ogl_window window;
 
-		// Bind our texture in Texture Unit 0
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, renderedTexture);
-		// Set our "renderedTexture" sampler to use Texture Unit 0
-		glUniform1i(texID, 0);
+	ogl_mesh mesh;
+	ogl_camera cam;
+	mesh.load("../rsc/cube.obj");
 
-		glUniform1f(timeID, (float)(glfwGetTime() * 10.0f));
+	mesh.bind_buffers();
 
-		// 1rst attribute buffer : vertices
-		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-		glVertexAttribPointer(
-			0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-			3,                  // size
-			GL_FLOAT,           // type
-			GL_FALSE,           // normalized?
-			0,                  // stride
-			(void*)0            // array buffer offset
-		);
+	ogl_frame_buffer fbo;
+	ogl_texture_drawer tex_draw;
 
-		// Draw the triangles !
-		glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
+	do {
+		
+		fbo.begin_draw(); {
 
-		glDisableVertexAttribArray(0);
+			cam.update(window.window);
+
+			mesh.draw_mesh(&cam);
+
+		} fbo.end_draw();
 
 
-	} while (window.end_draw());
+		window.begin_draw();
 
-	glDeleteBuffers(1, &vertexbuffer);
-	glDeleteBuffers(1, &elementbuffer);
-	glDeleteProgram(programID);
+		tex_draw.draw_texture(0, fbo.renderedTexture);
 
-	glDeleteFramebuffers(1, &FramebufferName);
-	glDeleteTextures(1, &renderedTexture);
-	glDeleteRenderbuffers(1, &depthrenderbuffer);
-	glDeleteBuffers(1, &quad_vertexbuffer);
-	glDeleteVertexArrays(1, &VertexArrayID);
-	glDeleteProgram(quad_programID);
+		window.end_draw();
+
+	} while (window.Close());
 }
