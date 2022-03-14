@@ -39,7 +39,7 @@ struct opengl {
 		glfwWindowHint(GLFW_SAMPLES, 4); // 4x anti-aliasing
 		glfwWindowHint(GLFW_VERSION_MAJOR, 3); // OpenGL 3.3
 		glfwWindowHint(GLEW_VERSION_MINOR, 2);
-		
+
 		//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
 		//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // No old OpenGL
 	}
@@ -49,7 +49,7 @@ struct opengl {
 	}
 };
 
-struct ogl_window { 
+struct ogl_window {
 	GLFWwindow* window;
 
 	ogl_window() {
@@ -84,7 +84,7 @@ struct ogl_window {
 	}
 
 	void begin_draw() {
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
 	bool end_draw() {
@@ -110,7 +110,7 @@ GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path)
 
 	// Read the Fragment Shader code from the file
 	string FragmentShaderCode = read_file(fragment_file_path);
-	
+
 
 	GLint Result = GL_FALSE;
 	int InfoLogLength;
@@ -172,28 +172,79 @@ GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path)
 }
 
 struct ogl_camera {
-	
-	glm::mat4 ViewMtx;
-	glm::mat4 ProjectionMtx;
 
-	alnf fov = 45.f;
-	bool orto = false;
+	glm::vec3 pos;
+	glm::vec3 target;
 
+	alnf fov;
+	alnf near;
+	alnf far;
 
-	void update(GLFWwindow* window) {
-		computeMatricesFromInputs(window);
-		ViewMtx = getViewMatrix();
-		ProjectionMtx = getProjectionMatrix();
-	}
+	bool orto;
+
+	alnf ratio;
 
 	ogl_camera() {
-		ProjectionMtx = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+		reset();
+	}
 
-		ViewMtx = glm::lookAt(
-			glm::vec3(4, 4, 4),
-			glm::vec3(0, 0, 0),
-			glm::vec3(0, 1, 0)
-		);
+	void reset() {
+		pos = glm::vec3(0, 0, 4);
+		target = glm::vec3(0, 0, 0);
+
+		fov = 100.f;
+		near = 0.01f;
+		far = 100.f;
+
+		orto = false;
+
+		ratio = 4 / 3.f;
+	}
+
+	glm::mat4 get_cam_proj_mat() {
+		return  glm::perspective(glm::radians((float)fov), (float)ratio, (float)near, (float)far);
+	}
+
+	glm::mat4 get_cam_view_mat() {
+		return glm::lookAt(pos, target, glm::vec3(0, 1, 0));
+	}
+
+	void update(GLFWwindow* window) {
+		// Move forward
+		glm::vec3 forward = glm::normalize(target - pos);
+		glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
+		glm::vec3 up = glm::normalize(glm::cross(right, forward));
+
+		float degree = 0.2;
+		glm::vec3 rot_axis;
+
+		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+			glm::mat4 rot_mat = glm::rotate(glm::mat4(1.0f), glm::radians(degree), right);
+			pos = glm::vec3(glm::vec4(pos, 1.0f) * rot_mat);
+		}
+		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+			glm::mat4 rot_mat = glm::rotate(glm::mat4(1.0f), glm::radians(-degree), right);
+			pos = glm::vec3(glm::vec4(pos, 1.0f) * rot_mat);
+		}
+		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+			glm::mat4 rot_mat = glm::rotate(glm::mat4(1.0f), glm::radians(degree), glm::vec3(0, 1, 0));
+			pos = glm::vec3(glm::vec4(pos, 1.0f) * rot_mat);
+		}
+		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+			glm::mat4 rot_mat = glm::rotate(glm::mat4(1.0f), glm::radians(-degree), glm::vec3(0, 1, 0));
+			pos = glm::vec3(glm::vec4(pos, 1.0f) * rot_mat);
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
+			pos += forward * glm::vec3(0.01);
+		}
+		if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
+			pos -= forward * glm::vec3(0.01);
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+			reset();
+		}
 	}
 };
 
@@ -210,17 +261,17 @@ struct ogl_color_data {
 };
 
 struct ogl_mesh {
-	
+
 	GLfloat g_vertex_buffer_data[9] = {
-	 -1.0f, -1.0f, 0.0f,
-	 1.0f, -1.0f, 0.0f,
-	 0.0f,  1.0f, 0.0f,
+	 0.0f, 0.0f, 0.0f,
+	 1.0f, 0.0f, 0.0f,
+	 0.0f, 1.0f, 0.0f,
 	};
 
 	GLfloat g_color_buffer_data[9] = {
 	 1.0f, 0.f, 0.0f,
 	 0.f, 1.0f, 0.0f,
-	 0.0f,  1.0f, 0.0f,
+	 0.0f,  0.0f, 1.0f,
 	};
 
 	//Array<ogl_vertex_data> g_vertex_buffer_data;
@@ -234,11 +285,11 @@ struct ogl_mesh {
 	}
 
 	/*
-	
+
 	void load(string path) {
 		objl::Loader loader;
 		loader.LoadFile(path.cstr());
-		
+
 		objl::Mesh& mesh = loader.LoadedMeshes[0];
 
 		g_vertex_buffer_data.Reserve(mesh.Vertices.size());
@@ -259,12 +310,12 @@ struct ogl_mesh {
 			g_color_buffer_data[i].Y = 0;
 			g_color_buffer_data[i].Z = 0;
 		}
-		
+
 	}
 	*/
 
 	glm::mat4 get_MPV(ogl_camera& cam) {
-		return cam.ProjectionMtx * cam.ViewMtx * MTXmodel;
+		return cam.get_cam_proj_mat() * cam.get_cam_view_mat() * MTXmodel;
 	}
 };
 
@@ -326,12 +377,12 @@ int main() {
 		glEnableVertexAttribArray(1);
 		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
 		glVertexAttribPointer(
-			1,                                
-			3,                                
-			GL_FLOAT,                         
-			GL_FALSE,                         
-			0,                                
-			(void*)0                          
+			1,
+			3,
+			GL_FLOAT,
+			GL_FALSE,
+			0,
+			(void*)0
 		);
 
 
