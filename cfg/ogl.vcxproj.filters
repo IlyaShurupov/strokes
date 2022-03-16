@@ -14,9 +14,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\inc\main.h">
-      <Filter>inc</Filter>
-    </ClInclude>
     <ClInclude Include="..\inc\objloader.h">
       <Filter>inc</Filter>
     </ClInclude>

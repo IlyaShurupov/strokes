@@ -19,7 +19,6 @@ MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei 
 	fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n", (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""), type, severity, message);
 }
 
-
 struct opengl {
 	opengl() {
 
@@ -40,6 +39,8 @@ struct opengl {
 
 struct ogl_window {
 	GLFWwindow* window;
+	glm::vec4 clear_col = glm::vec4(1, 0, 0, 1);
+	glm::vec2 size = glm::vec2(1024, 768);
 
 	ogl_window() {
 		window = glfwCreateWindow(1024, 768, "Tutorial 01", NULL, NULL);
@@ -58,8 +59,6 @@ struct ogl_window {
 			assert(0);
 		}
 
-		glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
-
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
 		glEnable(GL_CULL_FACE);
@@ -74,9 +73,9 @@ struct ogl_window {
 
 	void begin_draw() {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		//glViewport(0, 0, 1024, 768); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+		glViewport(0, 0, size.x, size.y); // Render on the whole framebuffer, complete from the lower left corner to the upper right
 		// Clear the screen
-		glClearColor(1, 0, 0, 0);
+		glClearColor(clear_col.r, clear_col.g, clear_col.b, clear_col.a);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
@@ -178,9 +177,14 @@ struct ogl_frame_buffer {
 	GLuint renderedTexture;
 	GLuint depthrenderbuffer;
 
-	glm::vec2 size = glm::vec2(500, 500);
+	glm::vec2 size;
 
-	ogl_frame_buffer() {
+	glm::vec4 clear_col;
+
+	ogl_frame_buffer(glm::vec2 p_size) {
+
+		size = p_size;
+
 		// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
 		FramebufferName = 0;
 		glGenFramebuffers(1, &FramebufferName);
@@ -221,7 +225,7 @@ struct ogl_frame_buffer {
 		// Render to our framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
 		glViewport(0, 0, size.x, size.y); // Render on the whole framebuffer, complete from the lower left corner to the upper right
-		glClearColor(0, 0, 0, 0);
+		glClearColor(clear_col.r, clear_col.g, clear_col.b, clear_col.a);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(0);
 	}
@@ -250,6 +254,9 @@ struct ogl_texture_drawer {
 	GLuint quad_programID;
 	GLuint texID;
 	GLuint timeID;
+	GLuint rect_mat;
+
+	glm::vec4 clear_col = glm::vec4(0, 1, 0, 1);
 
 	const GLfloat g_quad_vertex_buffer_data[18] = {
 		-1.0f, -1.0f, 0.0f,
@@ -273,24 +280,54 @@ struct ogl_texture_drawer {
 		quad_programID = LoadShaders("../rsc/shaders/Passthrough.vert", "../rsc/shaders/Texture.frag");
 		texID = glGetUniformLocation(quad_programID, "renderedTexture");
 		timeID = glGetUniformLocation(quad_programID, "time");
+		rect_mat = glGetUniformLocation(quad_programID, "RectMat");
 	}
 
-	void draw_texture(GLuint from, GLuint to_tex) {
+	glm::mat4 get_rect_transform_mat(const glm::vec4& target, const glm::vec2& domen_size) {
+		
+		float scale_x = (target.z - target.x) / domen_size.x;
+		float scale_y = (target.w - target.y) / domen_size.y;
+		
+		float move_x = (target.x / domen_size.x) - (1 - scale_x);
+		float move_y = (target.y / domen_size.y) - (1 - scale_y);
+		
+		glm::mat4 out = glm::mat4(1.f);
+		
+		out[3][0] = move_x;
+		out[3][1] = move_y;
+
+		out[0][0] = scale_x;
+		out[1][1] = scale_y;
+
+		return out;
+	}
+
+	void draw_texture(ogl_frame_buffer* to_tex, ogl_frame_buffer* from, glm::vec4 rec) {
+
+		assert(from);
+
 		// Render to the screen
-		glBindFramebuffer(GL_FRAMEBUFFER, from);
-		glViewport(0, 0, 1024, 768); // Render on the whole framebuffer, complete from the lower left corner to the upper right
-		// Clear the screen
-		glClearColor(1, 0, 0, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glBindFramebuffer(GL_FRAMEBUFFER, to_tex ? to_tex->renderedTexture : 0);
+
+		if (to_tex) {
+			glViewport(0, 0, from->size.x, from->size.y); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+			// Clear the screen
+			//glClearColor(clear_col.r, clear_col.g, clear_col.b, clear_col.a);
+			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		}
 
 		// Use our shader
 		glUseProgram(quad_programID);
 
 		// Bind our texture in Texture Unit 0
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, to_tex);
+		glBindTexture(GL_TEXTURE_2D, from->renderedTexture);
 		// Set our "renderedTexture" sampler to use Texture Unit 0
 		glUniform1i(texID, 0);
+
+		glm::mat4 tmat = to_tex ? get_rect_transform_mat(rec, to_tex->size) : glm::mat4(1.f);
+			
+		glUniformMatrix4fv(rect_mat, 1, GL_FALSE, &tmat[0][0]);
 
 		glUniform1f(timeID, (float)(glfwGetTime() * 10.0f));
 
@@ -539,25 +576,65 @@ int main() {
 
 	mesh.bind_buffers();
 
-	ogl_frame_buffer fbo;
+	ogl_frame_buffer fbo(glm::vec2(1024, 768));
 	ogl_texture_drawer tex_draw;
 
+	double lastTime = glfwGetTime();
+	int nbFrames = 0;
+
+	ogl_frame_buffer fbo2(glm::vec2(500, 500 * 3 / 4.f));
+
 	do {
-		
+
+		// Measure speed
+		double currentTime = glfwGetTime();
+		nbFrames++;
+		if (currentTime - lastTime >= 1.0) { // If last prinf() was more than 1 sec ago
+				// printf and reset timer
+			printf("%f ms/frame FPS: %f \n", 1000.0 / double(nbFrames), double(nbFrames));
+			nbFrames = 0;
+			lastTime += 1.0;
+		}
+
+		cam.update(window.window);
+
 		fbo.begin_draw(); {
-
-			cam.update(window.window);
-
 			mesh.draw_mesh(&cam);
-
 		} fbo.end_draw();
 
+		fbo2.begin_draw(); {
+			
+			//mesh.draw_mesh(&cam);
+
+			glColor3f(1, 1, 1);
+
+			// Begin the pointer
+			glBegin(GL_POLYGON);
+
+			// Iterate through all the
+			// 360 degrees
+			for (int i = 0; i < 360; i++) {
+				glVertex2f(cos(glm::radians((float)i)) * 0.11, sin(glm::radians((float)i)) * 0.11);
+			}
+
+			// Sets vertex
+			glEnd();
+
+		} fbo2.end_draw();
+		
+
+		tex_draw.draw_texture(&fbo2, &fbo, glm::vec4(0, 0, 50, 3.f / 4 * 50));
 
 		window.begin_draw();
 
-		tex_draw.draw_texture(0, fbo.renderedTexture);
+		tex_draw.draw_texture(0, &fbo2, glm::vec4(200, 200, fbo.size.x / 2, fbo.size.y / 2)  /*glm::vec4(100, 100, 500, 3.f / 4 * 500)*/);
+
+
+
 
 		window.end_draw();
 
 	} while (window.Close());
+
+	return 0;
 }
