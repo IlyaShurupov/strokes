@@ -2,11 +2,11 @@
 
 in vec2 UV;
 
-out vec3 color;
+out vec4 color;
 
 uniform sampler2D renderedTexture;
 uniform float time;
 
 void main(){
-	color = texture(renderedTexture, UV).xyz;
+	color = texture(renderedTexture, UV);
 }

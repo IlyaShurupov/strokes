@@ -32,6 +32,14 @@
   <ItemGroup>
     <ClCompile Include="..\src\main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\rsc\shaders\default.frag" />
+    <None Include="..\rsc\shaders\default.vert" />
+    <None Include="..\rsc\shaders\Passthrough.vert" />
+    <None Include="..\rsc\shaders\test.frag" />
+    <None Include="..\rsc\shaders\test.vert" />
+    <None Include="..\rsc\shaders\Texture.frag" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

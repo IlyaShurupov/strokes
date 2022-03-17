@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogl", "ogl.vcxproj", "{FEE95CB2-CBDB-4114-8C94-80941A8DB61B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glfw", "..\..\glfw\config\src\glfw.vcxproj", "{8FB23769-990F-3014-9D36-CD40B93CF151}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -39,6 +41,26 @@ Global
 		{FEE95CB2-CBDB-4114-8C94-80941A8DB61B}.RelWithDebInfo|x64.Build.0 = Release-expl|x64
 		{FEE95CB2-CBDB-4114-8C94-80941A8DB61B}.RelWithDebInfo|x86.ActiveCfg = Release-expl|Win32
 		{FEE95CB2-CBDB-4114-8C94-80941A8DB61B}.RelWithDebInfo|x86.Build.0 = Release-expl|Win32
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.Debug|x64.ActiveCfg = Debug|x64
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.Debug|x64.Build.0 = Debug|x64
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.Debug|x86.ActiveCfg = Debug|x64
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.Debug|x86.Build.0 = Debug|x64
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.MinSizeRel|x64.ActiveCfg = MinSizeRel|x64
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.MinSizeRel|x64.Build.0 = MinSizeRel|x64
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.MinSizeRel|x86.ActiveCfg = MinSizeRel|x64
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.MinSizeRel|x86.Build.0 = MinSizeRel|x64
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.Release|x64.ActiveCfg = Release|x64
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.Release|x64.Build.0 = Release|x64
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.Release|x86.ActiveCfg = Release|x64
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.Release|x86.Build.0 = Release|x64
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.Release-expl|x64.ActiveCfg = Release|x64
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.Release-expl|x64.Build.0 = Release|x64
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.Release-expl|x86.ActiveCfg = RelWithDebInfo|x64
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.Release-expl|x86.Build.0 = RelWithDebInfo|x64
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.RelWithDebInfo|x86.ActiveCfg = RelWithDebInfo|x64
+		{8FB23769-990F-3014-9D36-CD40B93CF151}.RelWithDebInfo|x86.Build.0 = RelWithDebInfo|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

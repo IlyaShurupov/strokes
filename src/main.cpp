@@ -27,7 +27,9 @@ struct opengl {
 		glfwWindowHint(GLFW_SAMPLES, 4); // 4x anti-aliasing
 		glfwWindowHint(GLFW_VERSION_MAJOR, 3); // OpenGL 3.3
 		glfwWindowHint(GLEW_VERSION_MINOR, 2);
+		glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
 
+			
 		//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
 		//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // No old OpenGL
 	}
@@ -39,7 +41,7 @@ struct opengl {
 
 struct ogl_window {
 	GLFWwindow* window;
-	glm::vec4 clear_col = glm::vec4(1, 0, 0, 1);
+	glm::vec4 clear_col = glm::vec4(0, 0, 0, 0.1);
 	glm::vec2 size = glm::vec2(1024, 768);
 
 	ogl_window() {
@@ -58,6 +60,12 @@ struct ogl_window {
 			fprintf(stderr, "Failed to initialize GLEW\n");
 			assert(0);
 		}
+		
+
+		glEnable(GL_ALPHA_TEST);
+
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
 
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
@@ -65,6 +73,8 @@ struct ogl_window {
 
 		glEnable(GL_DEBUG_OUTPUT);
 		glDebugMessageCallback(MessageCallback, 0);
+
+		//glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
 	}
 
 	inline void mod_win() {
@@ -179,7 +189,7 @@ struct ogl_frame_buffer {
 
 	glm::vec2 size;
 
-	glm::vec4 clear_col;
+	glm::vec4 clear_col = glm::vec4(0, 0, 0, 1);
 
 	ogl_frame_buffer(glm::vec2 p_size) {
 
@@ -198,7 +208,7 @@ struct ogl_frame_buffer {
 		glBindTexture(GL_TEXTURE_2D, renderedTexture);
 
 		// Give an empty image to OpenGL ( the last "0" )
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, size.x, size.y, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.x, size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
 		// Poor filtering. Needed !
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -409,30 +419,31 @@ struct ogl_camera {
 	}
 
 	void update(GLFWwindow* window) {
+
+		glm::vec<2, double, glm::defaultp> mousepos;
+		glfwGetCursorPos(window, &mousepos.x, &mousepos.y);
+
+		static glm::vec<2, double, glm::defaultp> prev_pos = mousepos;
+		
+		glm::vec2 delta = prev_pos - mousepos;
+		float degree_X = delta.x;
+		float degree_Y = delta.y;
+
 		// Move forward
 		glm::vec3 forward = glm::normalize(target - pos);
 		glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
 		glm::vec3 up = glm::normalize(glm::cross(right, forward));
 
-		float degree = 0.2;
 		glm::vec3 rot_axis;
 
-		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-			glm::mat4 rot_mat = glm::rotate(glm::mat4(1.0f), glm::radians(degree), right);
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) {
+			glm::mat4 rot_mat = glm::rotate(glm::mat4(1.0f), glm::radians(-degree_Y), right);
+			pos = glm::vec3(glm::vec4(pos, 1.0f) * rot_mat);
+
+			rot_mat = glm::rotate(glm::mat4(1.0f), glm::radians(-degree_X), glm::vec3(0, 1, 0));
 			pos = glm::vec3(glm::vec4(pos, 1.0f) * rot_mat);
 		}
-		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-			glm::mat4 rot_mat = glm::rotate(glm::mat4(1.0f), glm::radians(-degree), right);
-			pos = glm::vec3(glm::vec4(pos, 1.0f) * rot_mat);
-		}
-		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-			glm::mat4 rot_mat = glm::rotate(glm::mat4(1.0f), glm::radians(degree), glm::vec3(0, 1, 0));
-			pos = glm::vec3(glm::vec4(pos, 1.0f) * rot_mat);
-		}
-		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-			glm::mat4 rot_mat = glm::rotate(glm::mat4(1.0f), glm::radians(-degree), glm::vec3(0, 1, 0));
-			pos = glm::vec3(glm::vec4(pos, 1.0f) * rot_mat);
-		}
+
 
 		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
 			pos += forward * glm::vec3(0.01);
@@ -444,7 +455,13 @@ struct ogl_camera {
 		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
 			reset();
 		}
+
+		prev_pos = mousepos;
 	}
+};
+
+struct vertex_barycentric {
+	GLfloat val[3] = {0, 0, 0};
 };
 
 struct ogl_mesh {
@@ -454,6 +471,8 @@ struct ogl_mesh {
 
 	Array<ogl_color_data> g_color_buffer_data;
 
+	Array<vertex_barycentric> g_vertex_barycentric;
+
 	glm::mat4 MTXmodel = glm::mat4(1.f);
 
 	GLuint programID;
@@ -462,8 +481,10 @@ struct ogl_mesh {
 	GLuint vertexbuffer;
 	GLuint colorbuffer;
 	GLuint elementbuffer;
+	GLuint barycentricbuffer;
 
 	ogl_mesh() {
+		glUseProgram(0);
 		programID = LoadShaders("../rsc/shaders/default.vert", "../rsc/shaders/default.frag");
 		glUseProgram(programID);
 		MatrixID = glGetUniformLocation(programID, "MVP");
@@ -476,6 +497,8 @@ struct ogl_mesh {
 		glGenBuffers(1, &colorbuffer);
 
 		glGenBuffers(1, &elementbuffer);
+
+		glGenBuffers(1, &barycentricbuffer);
 	}
 
 	void load(string path) {
@@ -503,6 +526,10 @@ struct ogl_mesh {
 			g_color_buffer_data[i].Z = randf();
 		}
 
+		g_vertex_barycentric.Reserve(mesh.Vertices.size());
+		for (alni i = 0; i < mesh.Vertices.size(); i++) {
+			g_vertex_barycentric[i].val[i % 3] = 1.f;
+		}
 	}
 
 	void bind_buffers() {
@@ -514,6 +541,9 @@ struct ogl_mesh {
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(g_trig_idxs[0]) * g_trig_idxs.length, g_trig_idxs.buff, GL_STATIC_DRAW);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, barycentricbuffer);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(g_vertex_barycentric[0]) * g_vertex_barycentric.length, g_vertex_barycentric.buff, GL_STATIC_DRAW);
 	}
 
 	glm::mat4 get_MPV(ogl_camera& cam) {
@@ -549,16 +579,29 @@ struct ogl_mesh {
 			(void*)0
 		);
 
+		glEnableVertexAttribArray(2);
+		glBindBuffer(GL_ARRAY_BUFFER, barycentricbuffer);
+		glVertexAttribPointer(
+			2,
+			3,
+			GL_FLOAT,
+			GL_FALSE,
+			0,
+			(void*)0
+		);
+
 		// Draw the triangles ! // mode. count. type. element. array buffer offset
 		glDrawElements(GL_TRIANGLES, g_trig_idxs.length, GL_UNSIGNED_INT, (void*)0);
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
+		glDisableVertexAttribArray(2);
 	}
 
 	~ogl_mesh() {
 		glDeleteBuffers(1, &vertexbuffer);
-		glDeleteBuffers(1, &elementbuffer);
+		glDeleteBuffers(1, &elementbuffer); 
+		glDeleteBuffers(1, &barycentricbuffer); 
 		glDeleteProgram(programID);
 		glDeleteVertexArrays(1, &VertexArrayID);
 	}
@@ -576,7 +619,7 @@ int main() {
 
 	mesh.bind_buffers();
 
-	ogl_frame_buffer fbo(glm::vec2(1024, 768));
+	ogl_frame_buffer fbo(glm::vec2(1024, 768)); fbo.clear_col = glm::vec4(0, 0, 0, 0);
 	ogl_texture_drawer tex_draw;
 
 	double lastTime = glfwGetTime();
@@ -614,7 +657,7 @@ int main() {
 			// Iterate through all the
 			// 360 degrees
 			for (int i = 0; i < 360; i++) {
-				glVertex2f(cos(glm::radians((float)i)) * 0.11, sin(glm::radians((float)i)) * 0.11);
+				glVertex2f(cos(glm::radians((float)i)) * 0.4, sin(glm::radians((float)i)) * 0.4);
 			}
 
 			// Sets vertex
@@ -623,14 +666,11 @@ int main() {
 		} fbo2.end_draw();
 		
 
-		tex_draw.draw_texture(&fbo2, &fbo, glm::vec4(0, 0, 50, 3.f / 4 * 50));
+		tex_draw.draw_texture(&fbo, &fbo2, glm::vec4(100, 100, 500, 3.f / 4 * 500));
 
 		window.begin_draw();
 
-		tex_draw.draw_texture(0, &fbo2, glm::vec4(200, 200, fbo.size.x / 2, fbo.size.y / 2)  /*glm::vec4(100, 100, 500, 3.f / 4 * 500)*/);
-
-
-
+		tex_draw.draw_texture(0, &fbo, glm::vec4(200, 200, 500, 3.f / 4 * 500));
 
 		window.end_draw();
 

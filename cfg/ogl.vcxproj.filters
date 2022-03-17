@@ -7,6 +7,9 @@
     <Filter Include="inc">
       <UniqueIdentifier>{a550040d-c870-44f1-971c-be770b8ca9d4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="rsc">
+      <UniqueIdentifier>{ed9e5b01-720d-4b63-b1d5-8401cab738a2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main.cpp">
@@ -17,5 +20,25 @@
     <ClInclude Include="..\inc\objloader.h">
       <Filter>inc</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\rsc\shaders\default.frag">
+      <Filter>rsc</Filter>
+    </None>
+    <None Include="..\rsc\shaders\default.vert">
+      <Filter>rsc</Filter>
+    </None>
+    <None Include="..\rsc\shaders\Passthrough.vert">
+      <Filter>rsc</Filter>
+    </None>
+    <None Include="..\rsc\shaders\Texture.frag">
+      <Filter>rsc</Filter>
+    </None>
+    <None Include="..\rsc\shaders\test.frag">
+      <Filter>rsc</Filter>
+    </None>
+    <None Include="..\rsc\shaders\test.vert">
+      <Filter>rsc</Filter>
+    </None>
   </ItemGroup>
 </Project>
