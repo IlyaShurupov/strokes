@@ -29,7 +29,7 @@ struct opengl {
 		glfwWindowHint(GLEW_VERSION_MINOR, 2);
 		glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
 
-			
+
 		//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
 		//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // No old OpenGL
 	}
@@ -60,7 +60,7 @@ struct ogl_window {
 			fprintf(stderr, "Failed to initialize GLEW\n");
 			assert(0);
 		}
-		
+
 
 		glEnable(GL_ALPHA_TEST);
 
@@ -69,7 +69,7 @@ struct ogl_window {
 
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
-		glEnable(GL_CULL_FACE);
+		//glEnable(GL_CULL_FACE);
 
 		glEnable(GL_DEBUG_OUTPUT);
 		glDebugMessageCallback(MessageCallback, 0);
@@ -294,15 +294,15 @@ struct ogl_texture_drawer {
 	}
 
 	glm::mat4 get_rect_transform_mat(const glm::vec4& target, const glm::vec2& domen_size) {
-		
+
 		float scale_x = (target.z - target.x) / domen_size.x;
 		float scale_y = (target.w - target.y) / domen_size.y;
-		
+
 		float move_x = (target.x / domen_size.x) - (1 - scale_x);
 		float move_y = (target.y / domen_size.y) - (1 - scale_y);
-		
+
 		glm::mat4 out = glm::mat4(1.f);
-		
+
 		out[3][0] = move_x;
 		out[3][1] = move_y;
 
@@ -336,7 +336,7 @@ struct ogl_texture_drawer {
 		glUniform1i(texID, 0);
 
 		glm::mat4 tmat = to_tex ? get_rect_transform_mat(rec, to_tex->size) : glm::mat4(1.f);
-			
+
 		glUniformMatrix4fv(rect_mat, 1, GL_FALSE, &tmat[0][0]);
 
 		glUniform1f(timeID, (float)(glfwGetTime() * 10.0f));
@@ -372,6 +372,12 @@ struct ogl_vertex_data {
 	GLfloat X;
 	GLfloat Y;
 	GLfloat Z;
+
+	void set(glm::vec3 pos) {
+		X = pos.x;
+		Y = pos.y;
+		Z = pos.z;
+	}
 };
 
 struct ogl_color_data {
@@ -391,7 +397,7 @@ struct ogl_camera {
 
 	bool orto;
 
-	alnf ratio;
+	float ratio;
 
 	ogl_camera() {
 		reset();
@@ -401,7 +407,7 @@ struct ogl_camera {
 		pos = glm::vec3(0, 0, 4);
 		target = glm::vec3(0, 0, 0);
 
-		fov = 100.f;
+		fov = 45.f;
 		near = 0.01f;
 		far = 100.f;
 
@@ -424,7 +430,7 @@ struct ogl_camera {
 		glfwGetCursorPos(window, &mousepos.x, &mousepos.y);
 
 		static glm::vec<2, double, glm::defaultp> prev_pos = mousepos;
-		
+
 		glm::vec2 delta = prev_pos - mousepos;
 		float degree_X = delta.x;
 		float degree_Y = delta.y;
@@ -436,7 +442,7 @@ struct ogl_camera {
 
 		glm::vec3 rot_axis;
 
-		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) {
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_3) == GLFW_PRESS) {
 			glm::mat4 rot_mat = glm::rotate(glm::mat4(1.0f), glm::radians(-degree_Y), right);
 			pos = glm::vec3(glm::vec4(pos, 1.0f) * rot_mat);
 
@@ -444,12 +450,14 @@ struct ogl_camera {
 			pos = glm::vec3(glm::vec4(pos, 1.0f) * rot_mat);
 		}
 
-
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
-			pos += forward * glm::vec3(0.01);
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {
+			pos += delta.y * (forward * glm::vec3(0.03));
 		}
-		if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
-			pos -= forward * glm::vec3(0.01);
+
+		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+			glm::vec3 move = right * glm::vec3(0.03 * delta.x) + up * glm::vec3(0.03 * -delta.y);
+			pos += move;
+			target += move;
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
@@ -461,7 +469,13 @@ struct ogl_camera {
 };
 
 struct vertex_barycentric {
-	GLfloat val[3] = {0, 0, 0};
+	GLfloat val[3] = { 0, 0, 0 };
+
+	void set(glm::vec3 in) {
+		val[0] = in.x;
+		val[1] = in.y;
+		val[2] = in.z;
+	}
 };
 
 struct ogl_mesh {
@@ -600,13 +614,248 @@ struct ogl_mesh {
 
 	~ogl_mesh() {
 		glDeleteBuffers(1, &vertexbuffer);
-		glDeleteBuffers(1, &elementbuffer); 
-		glDeleteBuffers(1, &barycentricbuffer); 
+		glDeleteBuffers(1, &elementbuffer);
+		glDeleteBuffers(1, &barycentricbuffer);
 		glDeleteProgram(programID);
 		glDeleteVertexArrays(1, &VertexArrayID);
 	}
 };
 
+
+struct stroke_point {
+	glm::vec3 pos = glm::vec3(0, 0, 0);
+	glm::vec4 col = glm::vec4(1, 1, 1, 1);
+	glm::vec3 normal = glm::normalize(glm::vec3(0, randf(), 0));
+	float thikness = 0.06;
+
+	stroke_point() {
+	}
+
+	stroke_point(glm::vec3 p_pos, glm::vec3 norm, float pthickness = 0.06) {
+		pos = p_pos;
+		normal = norm;
+		thikness = pthickness;
+	}
+};
+
+struct stroke {
+	Array<stroke_point> points;
+};
+
+struct Painter {
+
+	enum class pstate {
+		NONE,
+		ACTIVE,
+	} state = pstate::NONE;
+
+	stroke input;
+	float precision = 0.01;
+
+	void add_point(const glm::vec3& pos, const glm::vec3& norm, float thickness = 0.06) {
+		input.points.PushBack(stroke_point(pos, norm, thickness));
+	}
+
+	glm::vec3 project_3d(const glm::vec2& cpos, ogl_camera* cam) {
+		glm::vec3 forw = glm::normalize(cam->target - cam->pos);
+		glm::vec3 right = glm::normalize(glm::cross(forw, glm::vec3(0, 1, 0)));
+		glm::vec3 up = glm::cross(right, forw);
+		
+		float scale = glm::tan(glm::radians(cam->fov)/2) * glm::length(cam->target - cam->pos);
+		//float b = 1 / ;
+		//float a = 1 / b;
+		glm::vec3 out = cam->target + (cpos.x * scale * right * cam->ratio) - (cpos.y * scale * up );
+		return out;
+	}
+
+	bool passed(const glm::vec2& cur, const glm::vec2& prevcur) {
+		return glm::length(prevcur - cur) > precision;
+	}
+
+	void start(const glm::vec2& cpos, ogl_camera* cam) {
+		input.points.Free();
+		glm::vec3 point = project_3d(cpos, cam);
+		add_point(point, glm::normalize(cam->target - cam->pos), 0.01);
+	}
+
+	void sample(const glm::vec2& cpos, ogl_camera* cam) {
+		glm::vec3 point = project_3d(cpos, cam);
+		add_point(point, glm::normalize(cam->target - cam->pos));
+	}
+
+	void finish(const glm::vec2& cpos, ogl_camera* cam) {
+		if (input.points.length == 1) {
+			input.points.Free();
+		}
+		else {
+			input.points[input.points.length - 1].thikness = 0.01;
+		}
+	}
+
+	// cpos - normilized coordinates from center
+	void update(glm::vec2 curs, bool mouse_down, ogl_camera* cam) {
+
+		static glm::vec2 prev_curs = curs;
+
+		switch (state) {
+			case pstate::NONE: {
+				if (mouse_down) {
+					start(curs, cam);
+					state = pstate::ACTIVE;
+					prev_curs = curs;
+				}
+				return;
+			}
+			case pstate::ACTIVE: {
+				if (!mouse_down) {
+					finish(curs, cam);
+					state = pstate::NONE;
+					return;
+				}
+				if (passed(curs, prev_curs)) {
+					sample(curs, cam);
+					prev_curs = curs;
+				}
+				return;
+			}
+		}
+	}
+};
+
+struct Drawing {
+
+	list<stroke> strokes;
+
+	void gen_quad(alni vidx, ogl_mesh& out, stroke_point* p1, stroke_point* p2, glm::vec3 dir1, glm::vec3 dir2) {
+		glm::vec3 perp = glm::normalize(glm::cross(p1->normal, p2->pos - p1->pos)) * p1->thikness;
+		float cosa1 = glm::dot(perp, dir1) / (glm::length(dir1) * glm::length(perp));
+		float cosa2 = glm::dot(perp, dir2) / (glm::length(dir2) * glm::length(perp));
+		//float thickness1 = -p1->thikness / cosa1;
+		//float thickness2 = -p2->thikness / cosa2;
+
+		dir1 = glm::normalize(dir1);
+		dir2 = glm::normalize(dir2);
+
+		glm::vec3 v1 = p1->pos + dir1 * p1->thikness;
+		glm::vec3 v2 = p2->pos + dir2 * p2->thikness;
+
+		glm::vec3 v3 = p2->pos - dir2 * p2->thikness;
+		glm::vec3 v4 = p1->pos - dir1 * p1->thikness;
+
+
+		out.g_vertex_buffer_data[vidx].set(v1);
+		out.g_vertex_buffer_data[vidx + 1].set(v2);
+		out.g_vertex_buffer_data[vidx + 2].set(v3);
+		out.g_vertex_buffer_data[vidx + 3].set(v3);
+		out.g_vertex_buffer_data[vidx + 4].set(v4);
+		out.g_vertex_buffer_data[vidx + 5].set(v1);
+
+		out.g_trig_idxs[vidx] = vidx;
+		out.g_trig_idxs[vidx + 1] = vidx + 1;
+		out.g_trig_idxs[vidx + 2] = vidx + 2;
+		out.g_trig_idxs[vidx + 3] = vidx + 3;
+		out.g_trig_idxs[vidx + 4] = vidx + 4;
+		out.g_trig_idxs[vidx + 5] = vidx + 5;
+
+		out.g_vertex_barycentric[vidx].set(glm::vec3(1, 0, 0));
+		out.g_vertex_barycentric[vidx + 1].set(glm::vec3(0, 1, 0));
+		out.g_vertex_barycentric[vidx + 2].set(glm::vec3(0, 0, 1));
+		out.g_vertex_barycentric[vidx + 3].set(glm::vec3(1, 0, 0));
+		out.g_vertex_barycentric[vidx + 4].set(glm::vec3(0, 1, 0));
+		out.g_vertex_barycentric[vidx + 5].set(glm::vec3(0, 0, 1));
+	}
+
+
+	glm::vec3 get_dir_vec(glm::vec3 v1, glm::vec3 v2, const glm::vec3& norm) {
+		
+		v1 = glm::normalize(v1);
+		v2 = glm::normalize(v2);
+
+		glm::vec3 plane_normal;
+
+		float val = glm::dot(v2, v1);
+		if (val < -0.999999) {
+			plane_normal = v2;
+		}
+		else {
+			glm::vec3 cross = glm::cross(v1, v2);
+			float rot_angle = glm::acos(glm::dot(v1, v2)) / 2.f;
+			glm::mat4 rot_matrix = glm::rotate(rot_angle, cross);
+			glm::vec3 middle = rot_matrix * glm::vec4(v1.x, v1.y, v1.z, 0);
+			plane_normal = glm::cross(middle, cross);
+		}
+		
+		return glm::cross(plane_normal, norm);
+	}
+
+	void solve_stroke(alni& vidx, ogl_mesh& out, stroke* str) {
+		alni len = str->points.length;
+		for (alni pidx = 0; pidx < len - 1; pidx++) {
+
+			stroke_point pt0;
+			stroke_point pt1 = str->points[pidx];
+			stroke_point pt2 = str->points[pidx + 1];
+			stroke_point pt3;
+
+			glm::vec3 dir1;
+			glm::vec3 dir2;
+
+			if (pidx > 0) {
+				pt0 = str->points[pidx - 1];
+			}
+			else {
+				pt0.pos = pt1.pos + (pt1.pos - pt2.pos);
+				pt0.thikness = 0.001;
+			}
+
+			if (pidx < len - 2) {
+				pt3 = str->points[pidx + 2];
+			}
+			else {
+				pt3.pos = pt2.pos + (pt2.pos - pt1.pos);
+				pt3.thikness = 0.001;
+			}
+
+			dir1 = get_dir_vec(pt0.pos - pt1.pos, pt2.pos - pt1.pos, pt1.normal);
+			dir2 = get_dir_vec(pt1.pos - pt2.pos, pt3.pos - pt2.pos, pt2.normal);
+
+			if (glm::dot(dir1, dir2) < 0) {
+				dir1 *= -1;
+			}
+
+			gen_quad(vidx * 6, out, &pt1, &pt2, dir1, dir2);
+
+			vidx++;
+		}
+	}
+
+	void to_mesh(ogl_mesh& out, Painter* painter) {
+
+		alni mesh_vertex_len = 0;
+		for (auto str : strokes) {
+			mesh_vertex_len += (str.Data().points.length - 1) * 6;
+		}
+		if (painter->input.points.length) mesh_vertex_len += (painter->input.points.length - 1) * 6;
+
+		out.g_vertex_buffer_data.Reserve(mesh_vertex_len);
+		out.g_color_buffer_data.Reserve(mesh_vertex_len);
+		out.g_vertex_barycentric.Reserve(mesh_vertex_len);
+		out.g_trig_idxs.Reserve(mesh_vertex_len);
+
+		alni vidx = 0;
+		for (auto str : strokes) {
+			solve_stroke(vidx, out, &str.Data());
+		}
+
+		if (painter->input.points.length > 1) {
+			solve_stroke(vidx, out, &painter->input);
+			if (painter->state == Painter::pstate::NONE) {
+				strokes.PushBack(painter->input);
+				painter->input.points.Free();
+			}
+		}
+	}
+};
 
 int main() {
 
@@ -627,6 +876,23 @@ int main() {
 
 	ogl_frame_buffer fbo2(glm::vec2(500, 500 * 3 / 4.f));
 
+
+	stroke_point p1;
+	p1.pos = glm::vec3(-1, 0, 0);
+
+	stroke_point p2;
+	p2.pos = glm::vec3(1, 0, 0);
+
+	stroke st;
+	st.points.PushBack(p1);
+	st.points.PushBack(p2);
+
+	Drawing dr;
+	dr.strokes.PushBack(st);
+
+	ogl_mesh strokes_mesh;
+	Painter painter;
+
 	do {
 
 		// Measure speed
@@ -641,14 +907,24 @@ int main() {
 
 		cam.update(window.window);
 
+		glm::vec<2, double, glm::defaultp> mousepos;
+		glfwGetCursorPos(window.window, &mousepos.x, &mousepos.y);
+
+		bool draw = glfwGetMouseButton(window.window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS;
+		painter.update(glm::vec2((mousepos.x / window.size.x - 0.5)*2, (mousepos.y / window.size.y - 0.5)*2), draw, &cam);
+
+		dr.to_mesh(strokes_mesh, &painter);
+		strokes_mesh.bind_buffers();
+
 		fbo.begin_draw(); {
-			mesh.draw_mesh(&cam);
+			strokes_mesh.draw_mesh(&cam);
 		} fbo.end_draw();
 
 		fbo2.begin_draw(); {
-			
-			//mesh.draw_mesh(&cam);
 
+			mesh.draw_mesh(&cam);
+
+			/*
 			glColor3f(1, 1, 1);
 
 			// Begin the pointer
@@ -662,9 +938,10 @@ int main() {
 
 			// Sets vertex
 			glEnd();
+			*/
 
 		} fbo2.end_draw();
-		
+
 
 		tex_draw.draw_texture(&fbo, &fbo2, glm::vec4(100, 100, 500, 3.f / 4 * 500));
 
