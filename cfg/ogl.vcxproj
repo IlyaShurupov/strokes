@@ -27,15 +27,31 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\inc\controller.h" />
+    <ClInclude Include="..\inc\fbuffer.h" />
+    <ClInclude Include="..\inc\gl.h" />
+    <ClInclude Include="..\inc\glcommon.h" />
+    <ClInclude Include="..\inc\glutils.h" />
     <ClInclude Include="..\inc\objloader.h" />
+    <ClInclude Include="..\inc\shader.h" />
+    <ClInclude Include="..\inc\strokes.h" />
+    <ClInclude Include="..\inc\window.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\controller.cpp" />
+    <ClCompile Include="..\src\fbuffer.cpp" />
+    <ClCompile Include="..\src\glutils.cpp" />
     <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\shader.cpp" />
+    <ClCompile Include="..\src\strokes.cpp" />
+    <ClCompile Include="..\src\window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\rsc\shaders\default.frag" />
     <None Include="..\rsc\shaders\default.vert" />
     <None Include="..\rsc\shaders\Passthrough.vert" />
+    <None Include="..\rsc\shaders\stroke.frag" />
+    <None Include="..\rsc\shaders\stroke.vert" />
     <None Include="..\rsc\shaders\test.frag" />
     <None Include="..\rsc\shaders\test.vert" />
     <None Include="..\rsc\shaders\Texture.frag" />

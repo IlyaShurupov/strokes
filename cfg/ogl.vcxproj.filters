@@ -10,15 +10,60 @@
     <Filter Include="rsc">
       <UniqueIdentifier>{ed9e5b01-720d-4b63-b1d5-8401cab738a2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="app">
+      <UniqueIdentifier>{95a611a5-22da-4b46-b069-fd9759433685}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\shader.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\window.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fbuffer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\glutils.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\strokes.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\controller.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\inc\objloader.h">
       <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\glcommon.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\shader.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\fbuffer.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\gl.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\window.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\glutils.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\strokes.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\controller.h">
+      <Filter>app</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -38,6 +83,12 @@
       <Filter>rsc</Filter>
     </None>
     <None Include="..\rsc\shaders\test.vert">
+      <Filter>rsc</Filter>
+    </None>
+    <None Include="..\rsc\shaders\stroke.frag">
+      <Filter>rsc</Filter>
+    </None>
+    <None Include="..\rsc\shaders\stroke.vert">
       <Filter>rsc</Filter>
     </None>
   </ItemGroup>
