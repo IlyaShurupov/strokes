@@ -40,7 +40,11 @@ struct stroke_mesh {
 	GLuint elementbuffer;
 	GLuint MatrixID;
 
+	void init();
+
 	stroke_mesh();
+	void operator=(const stroke_mesh& in);
+
 	void bind_buffers();
 	void draw_mesh(const mat4& proj_mat, const mat4& view_mat);
 	~stroke_mesh();
@@ -69,6 +73,7 @@ struct stroke {
 
 	void drawcall(const mat4& proj_mat, const mat4& view_mat);
 	void add_point(const stroke_point& p);
+
 };
 
 class drawlayer {
@@ -89,11 +94,11 @@ class inputsmpler {
 	} state = pstate::NONE;
 
 	stroke input;
-	float precision = 0.01;
+	float precision = 0.02;
 
-	void add_point(const vec3& pos, const vec3& norm, float thickness = 0.06);
+	void add_point(const vec3& pos, const vec3& norm, float thickness = 0.03);
 	vec3 project_3d(const vec2& cpos, camera* cam);
-	bool passed(const vec2& cur, const vec2& prevcur);
+	bool passed(const vec3& point);
 	void start(const vec2& cpos, camera* cam);
 	void sample_util(const vec2& cpos, camera* cam);
 	void finish(const vec2& cpos, camera* cam);

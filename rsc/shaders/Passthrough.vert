@@ -12,4 +12,3 @@ void main(){
 	gl_Position =  RectMat * vec4(vertexPosition_modelspace,1);
 	UV = (vertexPosition_modelspace.xy+vec2(1,1))/2.0;
 }
-

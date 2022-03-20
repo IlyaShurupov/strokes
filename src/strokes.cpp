@@ -25,8 +25,7 @@ mat4 camera::viewmat() {
 }
 
 
-stroke_mesh::stroke_mesh() {
-
+void stroke_mesh::init() {
 	static ogl::shader shader("stroke", NULL, "stroke");
 	this->shader = &shader;
 
@@ -40,7 +39,31 @@ stroke_mesh::stroke_mesh() {
 	glGenBuffers(1, &elementbuffer);
 }
 
+stroke_mesh::stroke_mesh() {
+	init();
+}
+
+void stroke_mesh::operator=(const stroke_mesh& in) {
+	
+	glDeleteBuffers(1, &vertexbuffer);
+	glDeleteBuffers(1, &colorbuffer);
+	glDeleteBuffers(1, &elementbuffer);
+	glDeleteVertexArrays(1, &VertexArrayID);
+
+	init();
+
+	vbo = in.vbo;
+	cbo = in.cbo;
+	ebo = in.ebo;
+	omatrix = in.omatrix;
+
+	bind_buffers();
+}
+
 void stroke_mesh::bind_buffers() {
+
+	glBindVertexArray(VertexArrayID);
+
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vbo[0]) * vbo.length, vbo.buff, GL_STATIC_DRAW);
 
@@ -57,6 +80,7 @@ void stroke_mesh::draw_mesh(const mat4& proj_mat, const mat4& view_mat) {
 	shader->bind();
 	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj_mat * view_mat)[0][0]);
 
+
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
 
 	// 1st attribute buffer : vertices
@@ -66,8 +90,9 @@ void stroke_mesh::draw_mesh(const mat4& proj_mat, const mat4& view_mat) {
 
 	glEnableVertexAttribArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
+	//glBindVertexArray(VertexArrayID);
 	// Draw the triangles ! // mode. count. type. element. array buffer offset
 	glDrawElements(GL_TRIANGLES, ebo.length, GL_UNSIGNED_INT, (void*)0);
 
@@ -79,6 +104,7 @@ void stroke_mesh::draw_mesh(const mat4& proj_mat, const mat4& view_mat) {
 
 stroke_mesh::~stroke_mesh() {
 	glDeleteBuffers(1, &vertexbuffer);
+	glDeleteBuffers(1, &colorbuffer);
 	glDeleteBuffers(1, &elementbuffer);
 	glDeleteVertexArrays(1, &VertexArrayID);
 }
@@ -90,9 +116,6 @@ stroke_point::stroke_point() {
 	normal = vec3(0, 1, 0);
 	thikness = 0.06;
 }
-
-
-
 
 void stroke::gen_quad(alni pidx, stroke_point* p1, stroke_point* p2, vec3 dir1, vec3 dir2) {
 	/*
@@ -123,6 +146,13 @@ void stroke::gen_quad(alni pidx, stroke_point* p1, stroke_point* p2, vec3 dir1, 
 	mesh.ebo[vidx + 3] = vidx + 3;
 	mesh.ebo[vidx + 4] = vidx + 4;
 	mesh.ebo[vidx + 5] = vidx + 5;
+
+	mesh.cbo[vidx] = vec4(randf(), randf(), randf(), 1);
+	mesh.cbo[vidx + 1] = vec4(randf(), randf(), randf(), 1);
+	mesh.cbo[vidx + 2] = vec4(randf(), randf(), randf(), 1);
+	mesh.cbo[vidx + 3] = vec4(randf(), randf(), randf(), 1);
+	mesh.cbo[vidx + 4] = vec4(randf(), randf(), randf(), 1);
+	mesh.cbo[vidx + 5] = vec4(randf(), randf(), randf(), 1);
 }
 
 vec3 stroke::split_dir(vec3 v1, vec3 v2, const vec3& norm) {
@@ -205,7 +235,7 @@ void stroke::add_point(const stroke_point& p) {
 
 void drawlayer::add_stroke(const stroke& str) {
 	strokes.PushBack(str);
-	strokes.Last()->data.gen_mesh();
+	// strokes.Last()->data.gen_mesh();
 }
 
 void drawlayer::draw(const mat4& proj_mat, const mat4& view_mat) {
@@ -233,8 +263,11 @@ vec3 inputsmpler::project_3d(const vec2& cpos, camera* cam) {
 	return out;
 }
 
-bool inputsmpler::passed(const vec2& cur, const vec2& prevcur) {
-	return length(prevcur - cur) > precision;
+bool inputsmpler::passed(const vec3& point) {
+	if (input.points.length) {
+		return length(point - input.points[input.points.length - 1].pos) > precision;
+	}
+	return true;
 }
 
 void inputsmpler::start(const vec2& cpos, camera* cam) {
@@ -245,7 +278,9 @@ void inputsmpler::start(const vec2& cpos, camera* cam) {
 
 void inputsmpler::sample_util(const vec2& cpos, camera* cam) {
 	vec3 point = project_3d(cpos, cam);
-	add_point(point, normalize(cam->target - cam->pos));
+	if (passed(point)) {
+		add_point(point, normalize(cam->target - cam->pos));
+	}
 }
 
 void inputsmpler::finish(const vec2& cpos, camera* cam) {
@@ -259,14 +294,11 @@ void inputsmpler::finish(const vec2& cpos, camera* cam) {
 
 void inputsmpler::sample(vec2 curs, bool mouse_down, camera* cam) {
 
-	static vec2 prev_curs = curs;
-
 	switch (state) {
 		case pstate::NONE: {
 			if (mouse_down) {
 				start(curs, cam);
 				state = pstate::ACTIVE;
-				prev_curs = curs;
 			}
 			return;
 		}
@@ -276,10 +308,7 @@ void inputsmpler::sample(vec2 curs, bool mouse_down, camera* cam) {
 				state = pstate::NONE;
 				return;
 			}
-			if (passed(curs, prev_curs)) {
-				sample_util(curs, cam);
-				prev_curs = curs;
-			}
+			sample_util(curs, cam);
 			return;
 		}
 	}

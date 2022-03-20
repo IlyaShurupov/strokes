@@ -22,10 +22,10 @@ void camera_controller(GLFWwindow* window, camera* cam) {
 
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_3) == GLFW_PRESS) {
 		glm::mat4 rot_mat = glm::rotate(glm::mat4(1.0f), glm::radians(-degree_Y), right);
-		cam->pos = vec3(vec4(cam->pos, 1.0f) * rot_mat);
+		cam->pos = vec3(vec4(cam->pos - cam->target, 1.0f) * rot_mat) + cam->target;
 
 		rot_mat = glm::rotate(glm::mat4(1.0f), glm::radians(-degree_X), vec3(0, 1, 0));
-		cam->pos = vec3(vec4(cam->pos, 1.0f) * rot_mat);
+		cam->pos = vec3(vec4(cam->pos - cam->target, 1.0f) * rot_mat) + cam->target;
 	}
 
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {

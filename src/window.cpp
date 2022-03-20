@@ -23,14 +23,25 @@ window::window() {
 	init();
 }
 
+namespace WIN {
+#include <Windows.h>
+};
+
+
 void window::init() {
 	resize(size);
 
+	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+
+	//glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+	
 	winp = glfwCreateWindow(size.x, size.y, "NULL", NULL, NULL);
 
 	if (winp == NULL) {
 		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
 	}
+
+	glfwSetWindowPos(winp, 0, 0);
 
 	glfwSetInputMode(winp, GLFW_STICKY_KEYS, GL_TRUE);
 
@@ -40,6 +51,10 @@ void window::init() {
 	if (glewInit() != GLEW_OK) {
 		fprintf(stderr, "Failed to initialize GLEW\n");
 	}
+
+	WIN::HDC ourWindowHandleToDeviceContext = WIN::GetDC(WIN::GetActiveWindow());
+	WIN::MessageBoxA(0, (char*)glGetString(GL_VERSION), "OPENGL VERSION", 0);
+
 	init_utils();
 
 	glEnable(GL_ALPHA_TEST);
@@ -53,12 +68,18 @@ void window::init() {
 
 	glEnable(GL_DEBUG_OUTPUT);
 
-	//glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
+	glfwSetWindowAttrib(winp, GLFW_DECORATED, GLFW_FALSE);
 
 	glDebugMessageCallback(MessageCallback, 0);
+
+	int x, y;
+	glfwGetWindowSize(winp, &x, &y);
+	size.x = x;
+	size.y = y;
 }
 
-window::window(vec2 size) {
+window::window(vec2 psize) {
+	size = psize;
 	init();
 }
 

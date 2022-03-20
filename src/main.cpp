@@ -20,7 +20,7 @@ class Drawer {
 
 public:
 
-	Drawer() : ogl(), window(), fbo(vec2(1024, 768), vec4(0)) {
+	Drawer(vec2 size) : ogl(), window(size), fbo(size, vec4(0)) {
 	}
 	
 	void proc_inputs() {
@@ -59,9 +59,10 @@ public:
 
 };
 
-int main() {
 
-	Drawer app;
+int main() {
+	
+	Drawer app(vec2(1920, 1080));
 	frame_counter fc;
 
 	do {

@@ -36,6 +36,9 @@
     <ClCompile Include="..\src\controller.cpp">
       <Filter>app</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\gl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\inc\objloader.h">
