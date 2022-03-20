@@ -53,9 +53,7 @@ void window::init() {
 	}
 
 	WIN::HDC ourWindowHandleToDeviceContext = WIN::GetDC(WIN::GetActiveWindow());
-	WIN::MessageBoxA(0, (char*)glGetString(GL_VERSION), "OPENGL VERSION", 0);
-
-	init_utils();
+	printf("%s %s \n", (char*)glGetString(GL_VERSION), "OPENGL VERSION");
 
 	glEnable(GL_ALPHA_TEST);
 
@@ -76,6 +74,8 @@ void window::init() {
 	glfwGetWindowSize(winp, &x, &y);
 	size.x = x;
 	size.y = y;
+
+	init_utils();
 }
 
 window::window(vec2 psize) {

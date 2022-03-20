@@ -36,6 +36,8 @@ bool shader::compile_shader(const char* ShaderCode, GLuint ShaderID) {
 
 void shader::load(const char* pvert, const char* pgeom, const char* pfrag) {
 
+	return;
+
 	// Create the shaders
 	VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
@@ -49,17 +51,17 @@ void shader::load(const char* pvert, const char* pgeom, const char* pfrag) {
 	const char* frag = (shader_path + string(pfrag) + ".frag").cstr();
 
 	printf("Compiling shader : %s\n", vert);
-	compile_shader(read_file(vert).cstr(), VertexShaderID);
+	compile_shader(read_file(vert).get_writable(), VertexShaderID);
 
 	if (GeometryShaderID) {
 		// Compile Geometry Shader
 		printf("Compiling shader : %s\n", geom);
-		compile_shader(read_file(geom).cstr(), GeometryShaderID);
+		compile_shader(read_file(geom).get_writable(), GeometryShaderID);
 	}
 
 	// Compile Fragment Shader
 	printf("Compiling shader : %s\n", frag);
-	compile_shader(read_file(frag).cstr(), FragmentShaderID);
+	compile_shader(read_file(frag).get_writable(), FragmentShaderID);
 
 	// Link the program
 	printf("Linking program\n");

@@ -21,7 +21,7 @@ ogl::opengl::opengl() {
 	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // No old OpenGL
 	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE); // No old OpenGL
 	
-	glfwWindowHint(GLFW_SAMPLES, 4); // 4x anti-aliasing
+	glfwWindowHint(GLFW_SAMPLES, 0); // 4x anti-aliasing
 	glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
 
 	int major, minor, revision;

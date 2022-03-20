@@ -1,11 +1,11 @@
 
 #pragma once
 
+#include "glcommon.h"
+
 namespace ogl {
 
 	class shader {
-
-		typedef unsigned int GLuint;
 
 		GLuint programm;
 		GLuint VertexShaderID;
