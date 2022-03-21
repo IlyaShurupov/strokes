@@ -72,9 +72,7 @@ void draw_texture(GLuint out, GLuint in, const vec4& rec_domen, const vec4& rec_
 	// Render to the screen
 	glBindFramebuffer(GL_FRAMEBUFFER, out ? out : 0);
 
-	if (out) {
-		glViewport(0, 0, rec_domen.x, rec_domen.y); // Render on the whole framebuffer, complete from the lower left corner to the upper right
-	}
+	glViewport(rec_target.x, rec_target.y, rec_target.z, rec_target.w); // Render on the whole framebuffer, complete from the lower left corner to the upper right
 
 	// Use our shader
 	texdd->shader.bind();
@@ -85,7 +83,7 @@ void draw_texture(GLuint out, GLuint in, const vec4& rec_domen, const vec4& rec_
 	// Set our "renderedTexture" sampler to use Texture Unit 0
 	glUniform1i(texdd->texID, 0);
 
-	glm::mat4 tmat = out ? get_rect_transform_mat(rec_target, rec_domen) : mat4(1.f);
+	glm::mat4 tmat = 0? get_rect_transform_mat(rec_target, rec_domen) : mat4(1);
 
 	glUniformMatrix4fv(texdd->rect_mat, 1, GL_FALSE, &tmat[0][0]);
 

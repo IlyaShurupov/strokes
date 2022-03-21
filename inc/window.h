@@ -6,6 +6,7 @@
 namespace ogl {
 
 	class window {
+	public:
 
 		GLFWwindow* winp = NULL;
 		vec4 col_clear;
@@ -13,7 +14,6 @@ namespace ogl {
 
 		void resize(vec2 psize);
 		void init();
-	public:
 
 		window();
 		window(vec2 size);

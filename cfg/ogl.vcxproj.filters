@@ -42,6 +42,9 @@
     <ClCompile Include="..\src\tablet.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\GUI.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\inc\objloader.h">
@@ -72,6 +75,9 @@
       <Filter>app</Filter>
     </ClInclude>
     <ClInclude Include="..\inc\tablet.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\GUI.h">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>

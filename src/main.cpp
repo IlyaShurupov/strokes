@@ -8,19 +8,22 @@
 #include "strokes.h"
 #include "controller.h"
 
-class Drawer {
+#include "GUI.h"
+
+class StrokeApp {
 
 	ogl::opengl ogl;
 	ogl::window window;
 	ogl::fbuffer fbo;
 
+	GuiState gui;
 	camera cam;
 	drawlayer layer;
 	inputsmpler sampler;
 
 public:
 
-	Drawer(vec2 size) : ogl(), window(size), fbo(size, vec4(0)) {
+	StrokeApp(vec2 size) : ogl(), window(size), fbo(size, vec4(0)), gui(&window) {
 	}
 	
 	void proc_inputs() {
@@ -42,6 +45,8 @@ public:
 			layer.draw(cam.projmat(), cam.viewmat());
 			sampler.draw(cam.projmat(), cam.viewmat());
 
+			gui.Icon(vec4(10, 10, 100, 120), "A:/src/ogl/rsc/icons/Star.png");
+
 		} window.end_draw();
 	}
 
@@ -55,7 +60,7 @@ public:
 
 int main() {
 	
-	Drawer app(vec2(1920, 1080));
+	StrokeApp app(vec2(1920, 1080));
 	frame_counter fc;
 
 	do {
