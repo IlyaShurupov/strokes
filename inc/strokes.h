@@ -95,6 +95,7 @@ class inputsmpler {
 
 	stroke input;
 	float precision = 0.02;
+	float pressure;
 
 	void add_point(const vec3& pos, const vec3& norm, float thickness = 0.03);
 	vec3 project_3d(const vec2& cpos, camera* cam);
@@ -106,7 +107,7 @@ class inputsmpler {
 public:
 
 	// cpos - normilized coordinates from center
-	void sample(vec2 curs, bool mouse_down, camera* cam);
+	void sample(vec2 curs, float pressure, camera* cam);
 	void draw(const mat4& proj_mat, const mat4& view_mat);
 
 	bool active_state();

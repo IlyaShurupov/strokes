@@ -1,7 +1,8 @@
 
 #include "window.h"
-
 #include "glutils.h"
+#include "env.h"
+#include "tablet.h"
 
 void GLAPIENTRY
 MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
@@ -25,6 +26,8 @@ window::window() {
 
 namespace WIN {
 #include <Windows.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include "GLFW/glfw3native.h"
 };
 
 
@@ -53,7 +56,7 @@ void window::init() {
 	}
 
 	WIN::HDC ourWindowHandleToDeviceContext = WIN::GetDC(WIN::GetActiveWindow());
-	printf("%s %s \n", (char*)glGetString(GL_VERSION), "OPENGL VERSION");
+	printf("%s %s \n", (char*)glGetString(GL_VERSION), "OPENGL VERSION IN USE");
 
 	glEnable(GL_ALPHA_TEST);
 
@@ -76,6 +79,9 @@ void window::init() {
 	size.y = y;
 
 	init_utils();
+
+
+	tablet_init((int*)WIN::glfwGetWin32Window(winp));
 }
 
 window::window(vec2 psize) {
@@ -96,6 +102,7 @@ void window::clear() {
 
 void window::end_draw() {
 	glfwSwapBuffers(winp);
+	tablet_update((int*)WIN::glfwGetWin32Window(winp));
 	glfwPollEvents();
 }
 
@@ -109,6 +116,10 @@ bool window::CloseSignal() {
 
 GLFWwindow* window::geth() {
 	return winp;
+}
+
+float window::pen_pressure() {
+	return tablet_pressure();
 }
 
 vec2 ogl::window::cursor(bool normalized) {

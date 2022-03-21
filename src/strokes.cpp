@@ -244,12 +244,11 @@ void drawlayer::draw(const mat4& proj_mat, const mat4& view_mat) {
 	}
 }
 
-
 void inputsmpler::add_point(const vec3& pos, const vec3& norm, float thickness) {
 	stroke_point p;
 	p.pos = pos;
 	p.normal = norm;
-	p.thikness = thickness;
+	p.thikness = thickness * pressure;
 	input.add_point(p);
 }
 
@@ -292,18 +291,20 @@ void inputsmpler::finish(const vec2& cpos, camera* cam) {
 	}
 }
 
-void inputsmpler::sample(vec2 curs, bool mouse_down, camera* cam) {
+void inputsmpler::sample(vec2 curs, float pressure, camera* cam) {
+
+	this->pressure = pressure;
 
 	switch (state) {
 		case pstate::NONE: {
-			if (mouse_down) {
+			if (pressure > 0) {
 				start(curs, cam);
 				state = pstate::ACTIVE;
 			}
 			return;
 		}
 		case pstate::ACTIVE: {
-			if (!mouse_down) {
+			if (!pressure > 0) {
 				finish(curs, cam);
 				state = pstate::NONE;
 				return;

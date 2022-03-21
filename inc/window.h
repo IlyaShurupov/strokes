@@ -32,6 +32,8 @@ namespace ogl {
 
 		vec2 cursor(bool normalized = false);
 
+		float pen_pressure();
+
 		~window();
 	};
 

@@ -36,7 +36,6 @@ bool shader::compile_shader(const char* ShaderCode, GLuint ShaderID) {
 
 void shader::load(const char* pvert, const char* pgeom, const char* pfrag) {
 
-	return;
 
 	// Create the shaders
 	VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
@@ -46,22 +45,23 @@ void shader::load(const char* pvert, const char* pgeom, const char* pfrag) {
 	GLint Result = GL_FALSE;
 	int InfoLogLength;
 
-	const char* vert = (shader_path + string(pvert) + ".vert").cstr();
-	const char* geom = GeometryShaderID ? (shader_path + string(pgeom) + ".geom").cstr() : NULL;
-	const char* frag = (shader_path + string(pfrag) + ".frag").cstr();
+	std::string vert = std::string(shader_path.cstr()) + pvert + ".vert";
+	std::string geom = GeometryShaderID ? std::string(shader_path.cstr()) + pgeom + ".geom" : "";
+	std::string frag = std::string(shader_path.cstr()) + pfrag + ".frag";
 
-	printf("Compiling shader : %s\n", vert);
-	compile_shader(read_file(vert).get_writable(), VertexShaderID);
+	printf("Compiling shader : %s\n", vert.c_str());
+	string tmp = read_file(vert.c_str());
+	compile_shader(tmp.get_writable(), VertexShaderID);
 
 	if (GeometryShaderID) {
 		// Compile Geometry Shader
-		printf("Compiling shader : %s\n", geom);
-		compile_shader(read_file(geom).get_writable(), GeometryShaderID);
+		printf("Compiling shader : %s\n", geom.c_str());
+		compile_shader(read_file(geom.c_str()).get_writable(), GeometryShaderID);
 	}
 
 	// Compile Fragment Shader
-	printf("Compiling shader : %s\n", frag);
-	compile_shader(read_file(frag).get_writable(), FragmentShaderID);
+	printf("Compiling shader : %s\n", frag.c_str());
+	compile_shader(read_file(frag.c_str()).get_writable(), FragmentShaderID);
 
 	// Link the program
 	printf("Linking program\n");

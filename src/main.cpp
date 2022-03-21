@@ -26,7 +26,7 @@ public:
 	void proc_inputs() {
 
 		camera_controller(window.geth(), &cam);
-		sampler.sample(window.cursor(true), glfwGetMouseButton(window.geth(), GLFW_MOUSE_BUTTON_1) == GLFW_PRESS, &cam);
+		sampler.sample(window.cursor(true), window.pen_pressure(), &cam);
 
 		if (!sampler.active_state() && sampler.has_input()) {
 			layer.add_stroke(sampler.get_stroke());
