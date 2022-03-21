@@ -119,10 +119,11 @@ GLFWwindow* window::geth() {
 }
 
 float window::pen_pressure() {
-	//if (glfwGetMouseButton(winp, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) {
-		//return 1.f;
-	//}
-	return tablet_pressure();
+	float out = tablet_pressure();
+	if (glfwGetMouseButton(winp, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS && !out) {
+		return 1.f;
+	}
+	return out;
 }
 
 vec2 ogl::window::cursor(bool normalized) {

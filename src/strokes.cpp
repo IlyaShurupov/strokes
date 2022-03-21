@@ -200,14 +200,14 @@ void stroke::add_point(const stroke_point& p) {
 
 void drawlayer::undo() {
 	if (strokes.Last()) {
-		strokes_undo.Attach(strokes.Last(), strokes_undo.Last());
+		strokes_undo.PushBack(strokes.Last());
 		strokes.Detach(strokes.Last());
 	}
 }
 
 void drawlayer::redo() {
 	if (strokes_undo.Last()) {
-		strokes.Attach(strokes_undo.Last(), strokes.Last());
+		strokes.PushBack(strokes_undo.Last());
 		strokes_undo.Detach(strokes_undo.Last());
 	}
 }

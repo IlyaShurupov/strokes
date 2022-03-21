@@ -10,6 +10,8 @@
 
 #include "GUI.h"
 
+#include "common.h"
+
 class StrokeApp {
 
 	ogl::opengl ogl;
@@ -48,14 +50,15 @@ public:
 			sampler.draw(cam.projmat(), cam.viewmat());
 
 			//gui.Icon(vec4(10, 10, 100, 120), "A:/src/ogl/rsc/icons/Star.png");
-
-			if (gui.button(vec4(700, window.size.y - 80, 70, 70), NULL, "A:/src/ogl/rsc/icons/Backward.png")) {
-				layer.undo();
+			if (0) {
+				if (gui.button(vec4(700, window.size.y - 80, 70, 70), NULL, "A:/src/ogl/rsc/icons/Backward.png")) {
+					layer.undo();
+				}
+				if (gui.button(vec4(780, window.size.y - 80, 70, 70), NULL, "A:/src/ogl/rsc/icons/Forward.png")) {
+					layer.redo();
+				}
 			}
-			if (gui.button(vec4(780, window.size.y - 80, 70, 70), NULL, "A:/src/ogl/rsc/icons/Forward.png")) {
-				layer.redo();
-			}
-			if (gui.button(vec4(860, window.size.y - 80, 70, 70), NULL, "A:/src/ogl/rsc/icons/quit.png")) {
+			if (gui.button(vec4(900, window.size.y - 80, 50, 50), NULL, "A:/src/ogl/rsc/icons/quit.png")) {
 				quit = 1;
 			}
 
@@ -71,14 +74,26 @@ public:
 int main() {
 	
 	StrokeApp app(vec2(1920, 1080));
+
 	frame_counter fc;
+
+	timer tm(1000/120);
 
 	do {
 
 		fc.log();
 
+		tm.wait_out();
+		tm.reset();
+		
 		app.proc_inputs();
 		app.send_output();
 
 	} while (app.IsRunnign());
+
+	return 0;
+}
+
+int WinMain() {
+	return main();
 }
