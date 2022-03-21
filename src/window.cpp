@@ -119,6 +119,9 @@ GLFWwindow* window::geth() {
 }
 
 float window::pen_pressure() {
+	//if (glfwGetMouseButton(winp, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) {
+		//return 1.f;
+	//}
 	return tablet_pressure();
 }
 
@@ -134,6 +137,20 @@ vec2 ogl::window::cursor(bool normalized) {
 	}
 
 	return out;
+}
+
+bool ogl::window::rmb() {
+	static bool prev_state = 0;
+	
+	bool state = glfwGetMouseButton(winp, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS;
+	
+	if (state == prev_state) {
+		return 0;
+	}
+	else {
+		prev_state = state;
+		return state;
+	}
 }
 
 window::~window() {

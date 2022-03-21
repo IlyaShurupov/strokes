@@ -78,8 +78,12 @@ struct stroke {
 class drawlayer {
 
 	list<stroke> strokes;
+	list<stroke> strokes_undo;
 
 public:
+
+	void undo();
+	void redo();
 
 	void add_stroke(const stroke& str);
 	void draw(const mat4& proj_mat, const mat4& view_mat);

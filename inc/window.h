@@ -34,6 +34,8 @@ namespace ogl {
 
 		float pen_pressure();
 
+		bool rmb();
+
 		~window();
 	};
 

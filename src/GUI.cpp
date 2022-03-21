@@ -48,11 +48,31 @@ void GuiState::convert_rect(vec4& rec) {
 	rec.y = win->size.y - rec.y;
 }
 
+bool GuiState::inside(const vec4& rec) {
+	vec2 cur = win->cursor();
+	cur.y = win->size.y - cur.y;
+	return rec.x < cur.x && rec.y < cur.y && rec.x + rec.z > cur.x && rec.y + rec.w > cur.y;
+}
+
+bool GuiState::pushed(const vec4& rec) {
+	return inside(rec) && win->rmb();
+}
+
 void GuiState::Icon(vec4 rect, const char* IconId) {
 	GLuint tex = get_tex(IconId);
 	if (tex) {
 		draw_texture(0, tex, vec4(0, 0, win->size.x, win->size.y), rect);
 	}
+}
+
+bool GuiState::button(vec4 rect, const char* name, const char* IconId) {
+
+	Icon(rect, IconId);
+
+	if (pushed(rect)) {
+		return true;
+	}
+	return false;
 }
 
 GuiState::~GuiState() {

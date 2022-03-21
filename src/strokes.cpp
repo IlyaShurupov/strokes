@@ -198,6 +198,20 @@ void stroke::add_point(const stroke_point& p) {
 }
 
 
+void drawlayer::undo() {
+	if (strokes.Last()) {
+		strokes_undo.Attach(strokes.Last(), strokes_undo.Last());
+		strokes.Detach(strokes.Last());
+	}
+}
+
+void drawlayer::redo() {
+	if (strokes_undo.Last()) {
+		strokes.Attach(strokes_undo.Last(), strokes.Last());
+		strokes_undo.Detach(strokes_undo.Last());
+	}
+}
+
 void drawlayer::add_stroke(const stroke& str) {
 	strokes.PushBack(str);
 	// strokes.Last()->data.gen_mesh();
