@@ -30,13 +30,12 @@ void stroke_mesh::init() {
 	this->shader = &shader;
 
 	MatrixID = shader.getu("MVP");
+	ColorID = shader.getu("StrokeColor");
 
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
 
 	glGenBuffers(1, &vertexbuffer);
-	glGenBuffers(1, &colorbuffer);
-	glGenBuffers(1, &elementbuffer);
 }
 
 stroke_mesh::stroke_mesh() {
@@ -46,15 +45,11 @@ stroke_mesh::stroke_mesh() {
 void stroke_mesh::operator=(const stroke_mesh& in) {
 	
 	glDeleteBuffers(1, &vertexbuffer);
-	glDeleteBuffers(1, &colorbuffer);
-	glDeleteBuffers(1, &elementbuffer);
 	glDeleteVertexArrays(1, &VertexArrayID);
 
 	init();
 
 	vbo = in.vbo;
-	cbo = in.cbo;
-	ebo = in.ebo;
 	omatrix = in.omatrix;
 
 	bind_buffers();
@@ -66,46 +61,32 @@ void stroke_mesh::bind_buffers() {
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vbo[0]) * vbo.length, vbo.buff, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cbo[0]) * cbo.length, cbo.buff, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ebo[0]) * ebo.length, ebo.buff, GL_STATIC_DRAW);
 }
 
 
 void stroke_mesh::draw_mesh(const mat4& proj_mat, const mat4& view_mat) {
 	
+	glBindVertexArray(VertexArrayID);
+
 	shader->bind();
 	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj_mat * view_mat)[0][0]);
-
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
+	glUniform4fv(ColorID, 1, &color.x);
 
 	// 1st attribute buffer : vertices
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-	//glBindVertexArray(VertexArrayID);
 	// Draw the triangles ! // mode. count. type. element. array buffer offset
-	glDrawElements(GL_TRIANGLES, ebo.length, GL_UNSIGNED_INT, (void*)0);
+	glDrawArrays(GL_TRIANGLES, 0, vbo.length);
 
 	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
 
 	shader->unbind();
 }
 
 stroke_mesh::~stroke_mesh() {
 	glDeleteBuffers(1, &vertexbuffer);
-	glDeleteBuffers(1, &colorbuffer);
-	glDeleteBuffers(1, &elementbuffer);
 	glDeleteVertexArrays(1, &VertexArrayID);
 }
 
@@ -139,20 +120,6 @@ void stroke::gen_quad(alni pidx, stroke_point* p1, stroke_point* p2, vec3 dir1, 
 	mesh.vbo[vidx + 3] = v3;
 	mesh.vbo[vidx + 4] = v4;
 	mesh.vbo[vidx + 5] = v1;
-
-	mesh.ebo[vidx] = vidx;
-	mesh.ebo[vidx + 1] = vidx + 1;
-	mesh.ebo[vidx + 2] = vidx + 2;
-	mesh.ebo[vidx + 3] = vidx + 3;
-	mesh.ebo[vidx + 4] = vidx + 4;
-	mesh.ebo[vidx + 5] = vidx + 5;
-
-	mesh.cbo[vidx] = vec4(randf(), randf(), randf(), 1);
-	mesh.cbo[vidx + 1] = vec4(randf(), randf(), randf(), 1);
-	mesh.cbo[vidx + 2] = vec4(randf(), randf(), randf(), 1);
-	mesh.cbo[vidx + 3] = vec4(randf(), randf(), randf(), 1);
-	mesh.cbo[vidx + 4] = vec4(randf(), randf(), randf(), 1);
-	mesh.cbo[vidx + 5] = vec4(randf(), randf(), randf(), 1);
 }
 
 vec3 stroke::split_dir(vec3 v1, vec3 v2, const vec3& norm) {
@@ -182,8 +149,6 @@ void stroke::gen_mesh() {
 	alni nvert = (points.length - 1) * 6;
 
 	mesh.vbo.Reserve(nvert);
-	mesh.cbo.Reserve(nvert);
-	mesh.ebo.Reserve(nvert);
 
 	for (alni pidx = 0; pidx < points.length - 1; pidx++) {
 

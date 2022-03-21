@@ -36,18 +36,11 @@ public:
 	
 	void send_output() {
 
-		fbo.begin_draw(); {
-			fbo.clear();
-
-			layer.draw(cam.projmat(), cam.viewmat());
-			sampler.draw(cam.projmat(), cam.viewmat());
-
-		} fbo.end_draw();
-
 		window.begin_draw(); {
 			window.clear();
 
-			draw_texture(0, fbo.texId(), vec4(200, 200, 500, 3.f / 4 * 500), vec4(200, 200, 500, 3.f / 4 * 500));
+			layer.draw(cam.projmat(), cam.viewmat());
+			sampler.draw(cam.projmat(), cam.viewmat());
 
 		} window.end_draw();
 	}

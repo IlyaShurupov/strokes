@@ -28,17 +28,16 @@ struct camera {
 struct stroke_mesh {
 
 	Array<vec3> vbo; // position
-	Array<vec4> cbo; // color
-	Array<uint4> ebo; // idx
 
 	mat4 omatrix = glm::mat4(1.f);
 
 	ogl::shader* shader;
 	GLuint VertexArrayID;
 	GLuint vertexbuffer;
-	GLuint colorbuffer;
-	GLuint elementbuffer;
 	GLuint MatrixID;
+	GLuint ColorID;
+
+	vec4 color = vec4(1);
 
 	void init();
 
