@@ -5,7 +5,9 @@
 void camera_controller(GLFWwindow* window, camera* cam) {
 
 	glm::vec<2, double, glm::defaultp> mousepos;
+	glm::vec<2, int, glm::defaultp> winsize;
 	glfwGetCursorPos(window, &mousepos.x, &mousepos.y);
+	glfwGetWindowSize(window, &winsize.x, &winsize.y);
 
 	static glm::vec<2, double, glm::defaultp> prev_pos = mousepos;
 
@@ -33,9 +35,12 @@ void camera_controller(GLFWwindow* window, camera* cam) {
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-		vec3 move = right * vec3(0.03 * delta.x) + up * vec3(0.03 * -delta.y);
-		cam->pos += move;
-		cam->target += move;
+
+		vec3 p2 = cam->project(vec2(mousepos.x / winsize.x, -mousepos.y / winsize.y));
+		vec3 p1 = cam->project(vec2(prev_pos.x / winsize.x, -prev_pos.y / winsize.y));
+		vec3 move = p1 - p2;
+		cam->pos += move * 2.f;
+		cam->target += move * 2.f;
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {

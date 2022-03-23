@@ -23,6 +23,9 @@ struct camera {
 	void reset();
 	mat4 projmat();
 	mat4 viewmat();
+
+	vec3 project(vec2 normalized);
+	vec2 project(vec3 world);
 };
 
 struct stroke_mesh {
@@ -52,7 +55,6 @@ struct stroke_mesh {
 struct stroke_point {
 
 	vec3 pos;
-	vec4 col;
 	vec3 normal;
 	float thikness;
 
@@ -76,11 +78,10 @@ struct stroke {
 };
 
 class drawlayer {
+public:
 
 	list<stroke> strokes;
 	list<stroke> strokes_undo;
-
-public:
 
 	void undo();
 	void redo();
@@ -90,6 +91,7 @@ public:
 };
 
 class inputsmpler {
+public:
 
 	enum class pstate {
 		NONE,
@@ -97,20 +99,27 @@ class inputsmpler {
 	} state = pstate::NONE;
 
 	stroke input;
-	float precision = 0.02;
 	float pressure;
 
-	void add_point(const vec3& pos, const vec3& norm, float thickness = 0.03);
-	vec3 project_3d(const vec2& cpos, camera* cam);
+	float precision = 0.02;
+	float thickness = 0.04;
+	vec4 stroke_col = vec4(1);
+
+	bool eraser = false;
+	float eraser_size = 0.1f;
+
+	void add_point(const vec3& pos, const vec3& norm, float thickness);
 	bool passed(const vec3& point);
 	void start(const vec2& cpos, camera* cam);
 	void sample_util(const vec2& cpos, camera* cam);
+	void erase_util(list<stroke>* pull, list<stroke>* undo, const vec2& cpos, camera* cam);
 	void finish(const vec2& cpos, camera* cam);
 
-public:
+
 
 	// cpos - normilized coordinates from center
-	void sample(vec2 curs, float pressure, camera* cam);
+	void sample(list<stroke>* pull, list<stroke>* undo, vec2 curs, float pressure, camera* cam);
+	// screen space
 	void draw(const mat4& proj_mat, const mat4& view_mat);
 
 	bool active_state();

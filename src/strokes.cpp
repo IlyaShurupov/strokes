@@ -1,8 +1,26 @@
 
 #include "strokes.h"
 
+#include "glutils.h"
+
 camera::camera() {
 	reset();
+}
+
+vec3 camera::project(vec2 normalized) {
+	vec3 forw = normalize(target - pos);
+	vec3 right = normalize(cross(forw, vec3(0, 1, 0)));
+	vec3 up = cross(right, forw);
+
+	float scale = tan(radians(fov) / 2) * length(target - pos);
+	vec3 out = target + (normalized.x * scale * right * ratio) + (normalized.y * scale * up);
+	return out;
+}
+
+vec2 camera::project(vec3 world) {
+	vec4 transformed = (projmat() * viewmat()) * vec4(world, 1);
+	vec2 screen_pos = vec2(transformed.x / transformed.w, transformed.y / transformed.w);
+	return screen_pos;
 }
 
 void camera::reset() {
@@ -43,7 +61,7 @@ stroke_mesh::stroke_mesh() {
 }
 
 void stroke_mesh::operator=(const stroke_mesh& in) {
-	
+
 	glDeleteBuffers(1, &vertexbuffer);
 	glDeleteVertexArrays(1, &VertexArrayID);
 
@@ -51,6 +69,7 @@ void stroke_mesh::operator=(const stroke_mesh& in) {
 
 	vbo = in.vbo;
 	omatrix = in.omatrix;
+	color = in.color;
 
 	bind_buffers();
 }
@@ -65,7 +84,7 @@ void stroke_mesh::bind_buffers() {
 
 
 void stroke_mesh::draw_mesh(const mat4& proj_mat, const mat4& view_mat) {
-	
+
 	glBindVertexArray(VertexArrayID);
 
 	shader->bind();
@@ -93,7 +112,6 @@ stroke_mesh::~stroke_mesh() {
 
 stroke_point::stroke_point() {
 	pos = vec3(0, 0, 0);
-	col = vec4(1, 1, 1, 1);
 	normal = vec3(0, 1, 0);
 	thikness = 0.06;
 }
@@ -200,15 +218,15 @@ void stroke::add_point(const stroke_point& p) {
 
 void drawlayer::undo() {
 	if (strokes.Last()) {
-		strokes_undo.PushBack(strokes.Last());
-		strokes.Detach(strokes.Last());
+		strokes_undo.PushBack(strokes.Last()->data);
+		strokes.DelNode(strokes.Last());
 	}
 }
 
 void drawlayer::redo() {
 	if (strokes_undo.Last()) {
-		strokes.PushBack(strokes_undo.Last());
-		strokes_undo.Detach(strokes_undo.Last());
+		strokes.PushBack(strokes_undo.Last()->data);
+		strokes_undo.DelNode(strokes_undo.Last());
 	}
 }
 
@@ -218,8 +236,8 @@ void drawlayer::add_stroke(const stroke& str) {
 }
 
 void drawlayer::draw(const mat4& proj_mat, const mat4& view_mat) {
-	for (auto str : strokes) {
-		str.Data().drawcall(proj_mat, view_mat);
+	for (list_node<stroke>* str = strokes.Last(); str; str = str->prev) {
+		str->data.drawcall(proj_mat, view_mat);
 	}
 }
 
@@ -231,16 +249,6 @@ void inputsmpler::add_point(const vec3& pos, const vec3& norm, float thickness) 
 	input.add_point(p);
 }
 
-vec3 inputsmpler::project_3d(const vec2& cpos, camera* cam) {
-	vec3 forw = normalize(cam->target - cam->pos);
-	vec3 right = normalize(cross(forw, vec3(0, 1, 0)));
-	vec3 up = cross(right, forw);
-
-	float scale = tan(radians(cam->fov) / 2) * length(cam->target - cam->pos);
-	vec3 out = cam->target + (cpos.x * scale * right * cam->ratio) + (cpos.y * scale * up);
-	return out;
-}
-
 bool inputsmpler::passed(const vec3& point) {
 	if (input.points.length) {
 		return length(point - input.points[input.points.length - 1].pos) > precision;
@@ -250,14 +258,41 @@ bool inputsmpler::passed(const vec3& point) {
 
 void inputsmpler::start(const vec2& cpos, camera* cam) {
 	input.points.Free();
-	vec3 point = project_3d(cpos, cam);
+	vec3 point = cam->project(cpos);
 	add_point(point, normalize(cam->target - cam->pos), 0.01);
 }
 
 void inputsmpler::sample_util(const vec2& cpos, camera* cam) {
-	vec3 point = project_3d(cpos, cam);
+	vec3 point = cam->project(cpos);
 	if (passed(point)) {
-		add_point(point, normalize(cam->target - cam->pos));
+		add_point(point, normalize(cam->target - cam->pos), thickness);
+	}
+}
+
+void inputsmpler::erase_util(list<stroke>* pull, list<stroke>* undo, const vec2& cpos, camera* cam) {
+
+	list_node<stroke>* str = pull->First();
+	while (str) {
+		bool remove = false;
+
+		for (auto pnt : str->data.points) {
+			vec2 screen_pos = cam->project(pnt.data().pos);
+			if (glm::length((screen_pos - cpos)) < eraser_size) {
+				remove = true;
+				break;
+			}
+		}
+
+		if (remove) {
+			list_node<stroke>* tmp = str->next;
+
+			undo->PushBack(str->data);
+			pull->DelNode(str);
+			str = tmp;
+		}
+		else {
+			str = str->next;
+		}
 	}
 }
 
@@ -270,33 +305,42 @@ void inputsmpler::finish(const vec2& cpos, camera* cam) {
 	}
 }
 
-void inputsmpler::sample(vec2 curs, float pressure, camera* cam) {
+void inputsmpler::sample(list<stroke>* pull, list<stroke>* undo, vec2 curs, float pressure, camera* cam) {
 
+	this->input.mesh.color = stroke_col;
 	this->pressure = pressure;
 
+	if (eraser) {
+		if (pressure > 0) {
+			input.points.Free();
+			erase_util(pull, undo, curs, cam);
+		}
+		return;
+	}
+
 	switch (state) {
-		case pstate::NONE: {
-			if (pressure > 0) {
-				start(curs, cam);
-				state = pstate::ACTIVE;
-			}
+	case pstate::NONE: {
+		if (pressure > 0) {
+			start(curs, cam);
+			state = pstate::ACTIVE;
+		}
+		return;
+	}
+	case pstate::ACTIVE: {
+		if (!pressure > 0) {
+			finish(curs, cam);
+			state = pstate::NONE;
 			return;
 		}
-		case pstate::ACTIVE: {
-			if (!pressure > 0) {
-				finish(curs, cam);
-				state = pstate::NONE;
-				return;
-			}
-			sample_util(curs, cam);
-			return;
-		}
+		sample_util(curs, cam);
+		return;
+	}
 	}
 }
 
 void inputsmpler::draw(const mat4& proj_mat, const mat4& view_mat) {
-	static int prev_len = input.points.length;
 
+	static int prev_len = input.points.length;
 	if (input.points.length > 1) {
 		if (prev_len < input.points.length) {
 			input.gen_mesh();

@@ -82,6 +82,8 @@ void window::init() {
 
 
 	tablet_init((int*)WIN::glfwGetWin32Window(winp));
+
+	//glfwSwapInterval(1); // Enable vsync
 }
 
 window::window(vec2 psize) {
@@ -100,10 +102,16 @@ void window::clear() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void window::end_draw() {
+void window::end_draw(bool whait_for_event) {
 	glfwSwapBuffers(winp);
 	tablet_update((int*)WIN::glfwGetWin32Window(winp));
-	glfwPollEvents();
+
+	if (whait_for_event) {
+		glfwWaitEvents();
+	}
+	else {
+		glfwPollEvents();
+	}
 }
 
 inline void window::set_current() {
@@ -136,7 +144,10 @@ vec2 ogl::window::cursor(bool normalized) {
 		out.x = (out.x / size.x - 0.5) * 2;
 		out.y = -(out.y / size.y - 0.5) * 2;
 	}
-
+	else {
+		out.y = size.y - out.y;
+	}
+	
 	return out;
 }
 

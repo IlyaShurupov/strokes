@@ -30,13 +30,14 @@ struct frame_counter {
 	double lastTime = glfwGetTime();
 	int nbFrames = 0;
 
-	void log() {
+	void log(int& val) {
 		// Measure speed
 		double currentTime = glfwGetTime();
 		nbFrames++;
 		// If last prinf() was more than 1 sec ago
 		if (currentTime - lastTime >= 1.0) {
 			// printf and reset timer
+			val = nbFrames;
 			printf("%f ms/frame FPS: %f \n", 1000.0 / double(nbFrames), double(nbFrames));
 			nbFrames = 0;
 			lastTime += 1.0;

@@ -3,7 +3,19 @@
 
 #include "shader.h"
 
+#include "shader.h"
+
+#include "map.h"
+#include "strings.h"
+
+#include "SOIL/soil.h"
+#include <lunasvg.h>
+
+using namespace lunasvg;
+
 struct texture_drawer_data {
+
+	HashMap<GLuint, string> textures;
 
 	GLuint quad_VertexArrayID;
 	GLuint quad_vertexbuffer;
@@ -37,6 +49,10 @@ struct texture_drawer_data {
 	~texture_drawer_data() {
 		glDeleteBuffers(1, &quad_vertexbuffer);
 		glDeleteVertexArrays(1, &quad_VertexArrayID);
+
+		for (auto tex : textures) {
+			glDeleteTextures(1, &tex->val);
+		}
 	}
 };
 
@@ -44,6 +60,10 @@ texture_drawer_data* texdd = NULL;
 
 void init_utils() {
 	if (!texdd) texdd = new texture_drawer_data();
+}
+
+void finalize_utils() {
+	if (texdd) delete texdd;
 }
 
 glm::mat4 get_rect_transform_mat(const glm::vec4& target, const glm::vec2& domen_size) {
@@ -100,3 +120,34 @@ void draw_texture(GLuint out, GLuint in, const vec4& rec_domen, const vec4& rec_
 	texdd->shader.unbind();
 }
 
+GLuint load_texture(string name) {
+	GLuint tex_2d = 0;
+
+	if (0) {
+		auto document = Document::loadFromFile("tiger.svg");
+		auto bitmap = document->renderToBitmap();
+	}
+	else {
+		tex_2d = SOIL_load_OGL_texture(name.cstr(), SOIL_LOAD_RGBA, SOIL_CREATE_NEW_ID,
+			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
+
+		if (0 == tex_2d) {
+			printf("SOIL loading error: '%s'\n", SOIL_last_result());
+		}
+	}
+
+	return tex_2d;
+}
+
+GLuint get_tex(const char* TexId) {
+	GLuint out = 0;
+	alni idx = texdd->textures.Presents(TexId);
+	if (idx != -1) {
+		out = texdd->textures.Get(TexId);
+	}
+	else {
+		out = load_texture(TexId);
+		texdd->textures.Put(TexId, out);
+	}
+	return out;
+}

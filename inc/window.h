@@ -24,7 +24,7 @@ namespace ogl {
 		
 		void clear();
 		
-		void end_draw();
+		void end_draw(bool whait_for_event = false);
 
 		bool CloseSignal();
 
