@@ -103,7 +103,7 @@ public:
 
 	float precision = 0.02;
 	float thickness = 0.04;
-	vec4 stroke_col = vec4(1);
+	vec4 stroke_col = vec4(0, 0, 1, 1);
 
 	bool eraser = false;
 	float eraser_size = 0.1f;

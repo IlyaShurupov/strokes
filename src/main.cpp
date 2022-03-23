@@ -63,6 +63,9 @@ class StrokeApp {
 		return out;
 	}
 
+	vec4 tool_bar_rect = vec4(740, 980, 350, 50);
+	vec2 popup_size = vec2(200, 250);
+	bool tollbar_popup = false;
 public:
 	
 	int fps;
@@ -127,7 +130,6 @@ public:
 		} window.end_draw(/*whait_for_ev*/);
 	}
 
-
 	void mainloop() {
 		timer tm_frame_time(whait_for_ev ? dur(idle_device_fps) : dur(max_device_fps));
 		
@@ -152,44 +154,103 @@ public:
 		tm_frame_time.wait_out();
 	}
 
-	void draw_ui() {
-		//gui.Icon(vec4(10, 10, 100, 120), "A:/src/ogl/rsc/icons/Star.png");
-		if (gui.button(vec4(780, window.size.y - 80, 50, 50), NULL, "A:/src/ogl/rsc/icons/Backward.png")) {
-			layer.undo();
-		}
-		if (gui.button(vec4(840, window.size.y - 80, 50, 50), NULL, "A:/src/ogl/rsc/icons/Forward.png")) {
-			layer.redo();
-		}
+	void draw_brush_properties(vec4 rect) {
+		float slider_size = 40;
+		float picker_size = 180;
+
+		vec4 slider_rec = vec4(rect.x, rect.w + rect.y - slider_size, rect.z, slider_size);
 		if (sampler.eraser) {
-			if (gui.button(vec4(900, window.size.y - 80, 50, 50), NULL, "A:/src/ogl/rsc/icons/Pen.png")) {
-				sampler.eraser = false;
-			}
+			gui.FloatSlider(slider_rec, sampler.eraser_size, 0.01, 0.3);
+			popup_size.y = slider_size;
 		}
 		else {
-			if (gui.button(vec4(900, window.size.y - 80, 50, 50), NULL, "A:/src/ogl/rsc/icons/Eraser.png")) {
-				sampler.eraser = true;
+			gui.FloatSlider(slider_rec, sampler.thickness, 0.01, 0.25);
+			float size = glm::min(rect.z, rect.w - (slider_size + 10));
+			gui.ColorPicker(vec4(rect.x + (rect.z- size) / 2, rect.y, size, size), sampler.stroke_col);
+
+			popup_size.y = picker_size + slider_size + 10;
+		}
+
+		popup_size.x = picker_size;
+	}
+
+	void draw_toolbar(vec4 rect) {
+
+		vec4(*get_rect)(vec4 & in) = [](vec4& in) { 
+			static int idx = 0;
+			float butns = 6;
+			float item_size = in.z / butns;
+			float padding = item_size / 10;
+			item_size = item_size - padding;
+			
+			vec4 out = vec4(in.x + idx * (item_size + padding * 2), in.y, item_size, in.w);
+			
+			if (idx == 5) {
+				idx = 0;
+			}
+			else {
+				idx++;
+			}
+			return out;
+		};
+
+
+		if (gui.button(get_rect(rect), NULL, "A:/src/ogl/rsc/icons/Backward.png")) {
+			layer.undo();
+		}
+		if (gui.button(get_rect(rect), NULL, "A:/src/ogl/rsc/icons/Forward.png")) {
+			layer.redo();
+		}
+
+		{
+			vec4 butrec = get_rect(rect);
+			if (gui.button(butrec, NULL, sampler.eraser? "A:/src/ogl/rsc/icons/Eraser.png" : "A:/src/ogl/rsc/icons/Pen.png")) {
+				sampler.eraser = !sampler.eraser;
+			}
+			
+			bool activator_howered = gui.item_howered;
+			if (activator_howered) {
+				tollbar_popup = true;
+			}
+
+			if (tollbar_popup) {
+				vec4 poup_rec = vec4(butrec.x + butrec.z / 2 - popup_size.x / 2, butrec.y - 25 - popup_size.y, popup_size.x, popup_size.y);
+
+				bool should_close = !gui.pupup(poup_rec, 40);
+
+				if (should_close && !activator_howered) {
+					tollbar_popup = false;
+				}
+				else {
+					draw_brush_properties(poup_rec);
+				}
 			}
 		}
-		if (gui.button(vec4(960, window.size.y - 80, 50, 50), NULL, "A:/src/ogl/rsc/icons/Clear.png")) {
+
+		if (gui.button(get_rect(rect), NULL, "A:/src/ogl/rsc/icons/Clear.png")) {
 			alni len = layer.strokes.Len();
 			for (alni idx = 0; idx < len; idx++) {
 				layer.undo();
 			}
 		}
-		if (gui.button(vec4(1020, window.size.y - 80, 50, 50), NULL, "A:/src/ogl/rsc/icons/Debug.png")) {
+		if (gui.button(get_rect(rect), NULL, "A:/src/ogl/rsc/icons/Debug.png")) {
 			show_debug = !show_debug;
-			printf("debug is %i\n", show_debug);
 		}
-		if (gui.button(vec4(1080, window.size.y - 80, 50, 50), NULL, "A:/src/ogl/rsc/icons/Quit.png")) {
+		if (gui.button(get_rect(rect), NULL, "A:/src/ogl/rsc/icons/Quit.png")) {
 			quit = 1;
 		}
+	}
 
-		if (sampler.eraser) {
-			float cur_scale = sampler.eraser_size * window.size.x;
-			vec4 size = vec4(window.cursor().x - cur_scale / 2, window.cursor().y - cur_scale / 2, cur_scale, cur_scale);
-			GLuint tex = get_tex("../rsc/icons/EraserCursor.png");
-			draw_texture(0, tex, vec4(0, 0, window.size.x, window.size.y), size);
-		}
+	void draw_ui() {
+		draw_toolbar(tool_bar_rect);
+
+		float cur_scale = (sampler.eraser ? sampler.eraser_size : sampler.thickness) * window.size.x;
+		vec4 size = vec4(window.cursor().x - cur_scale / 2, window.cursor().y - cur_scale / 2, cur_scale, cur_scale);
+		GLuint tex = get_tex("../rsc/icons/EraserCursor.png");
+		draw_texture(0, tex, vec4(0, 0, window.size.x, window.size.y), size);
+
+		can_draw = !gui.gui_active;
+		gui.gui_active = false;
 	}
 
 	void render_debug_ui() {
@@ -211,7 +272,7 @@ public:
 		ImGui::ColorEdit4("Stroke Color", &sampler.stroke_col.x, flg);
 		ImGui::SliderFloat("Stroke Thikness", &sampler.thickness, 0.009, 0.1);
 		ImGui::SliderFloat("Sampler Precision", &sampler.precision, 0.01, 0.1);
-		ImGui::SliderFloat("Eraser Size", &sampler.eraser_size, 0.01, 0.9);
+		
 
 		ImGui::Separator();
 		ImGui::SliderInt("max_input_ratio", &max_input_ratio, 1, 200);
@@ -226,6 +287,12 @@ public:
 		ImGui::Text("Frame Time %f ms", frame_time);
 		ImGui::Text("Draw Time %f ms", draw_time);
 		ImGui::Text("Proc Time %f ms", frame_time - draw_time);
+		ImGui::Separator();
+		ImGui::SliderFloat("toolbar pos x", &tool_bar_rect.x, 0.f, 1000);
+		ImGui::SliderFloat("toolbar pos y", &tool_bar_rect.y, 0.f, 1000);
+		ImGui::SliderFloat("toolbar size x", &tool_bar_rect.z, 0.f, 1000);
+		ImGui::SliderFloat("toolbar size y", &tool_bar_rect.w, 0.f, 1000);
+		
 
 		ImGui::End();
 
