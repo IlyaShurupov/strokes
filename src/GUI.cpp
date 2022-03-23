@@ -3,6 +3,8 @@
 
 #include "glutils.h"
 
+#include "shader.h"
+
 GuiState::GuiState(ogl::window* winp) {
 	this->win = winp;
 }
@@ -95,132 +97,169 @@ void GuiState::FloatSlider(vec4 rect, float& val, float min, float max) {
 }
 
 
-float col_to_angle(vec4 col) {
-	float angle = 0;
-	int state = 0;
-	float rng = 2 * PI / 3;
+typedef struct {
+	double r;       // a fraction between 0 and 1
+	double g;       // a fraction between 0 and 1
+	double b;       // a fraction between 0 and 1
+} rgb;
+typedef struct {
+	double h;       // angle in degrees
+	double s;       // a fraction between 0 and 1
+	double v;       // a fraction between 0 and 1
+} hsv;
+hsv rgb2hsv(rgb in) {
+	hsv         out;
+	double      min, max, delta;
 
-	if (!col.r && !col.g && !col.b) {
-		return 0;
-	}
+	min = in.r < in.g ? in.r : in.g;
+	min = min < in.b ? min : in.b;
 
-	if (col.r > col.g && col.r > col.b) {
-		state = (col.g > col.b) ? 1 : 2;
+	max = in.r > in.g ? in.r : in.g;
+	max = max > in.b ? max : in.b;
+
+	out.v = max;                                // v
+	delta = max - min;
+	if (delta < 0.00001)
+	{
+		out.s = 0;
+		out.h = 0; // undefined, maybe nan?
+		return out;
 	}
-	else if (col.g > col.r && col.g > col.b) {
-		state = (col.r > col.b) ? 1 : 3;
+	if (max > 0.0) { // NOTE: if Max is == 0, this divide would cause a crash
+		out.s = (delta / max);                  // s
 	}
 	else {
-		state = (col.r > col.g) ? 2 : 3;
+		// if max is 0, then r = g = b = 0              
+		// s = 0, h is undefined
+		out.s = 0.0;
+		out.h = NAN;                            // its now undefined
+		return out;
 	}
+	if (in.r >= max)                           // > is bogus, just keeps compilor happy
+		out.h = (in.g - in.b) / delta;        // between yellow & magenta
+	else
+		if (in.g >= max)
+			out.h = 2.0 + (in.b - in.r) / delta;  // between cyan & yellow
+		else
+			out.h = 4.0 + (in.r - in.g) / delta;  // between magenta & cyan
 
-	switch (state) {
-		case 1:  // rg 
-			return (col.g / (col.g + col.r)) * rng;
-		case 2:  // br 
-			return rng * 2 + (col.r / (col.b + col.r)) * rng;
-		case 3: // gb 
-			return rng + (col.b / (col.g + col.b)) * rng;
-	}
-	return angle;
-}
+	out.h *= 60.0;                              // degrees
 
-vec4 angle_to_col(float angle) {
-	float rng = 2 * PI / 3;
-	float interp = 0;
-	vec4 out;
-	if (angle > rng * 2) { // blue -> red
-		interp = (angle - (rng * 2)) / rng;
-		out.r = interp;
-		out.g = 0;
-		out.b = 1 - interp;
+	if (out.h < 0.0)
+		out.h += 360.0;
 
-	}
-	else if (angle > rng) { // green -> blue
-		interp = (angle - (rng * 1)) / rng;
-		out.r = 0;
-		out.g = 1 - interp;
-		out.b = interp;
-	}
-	else { // red -> green
-		interp = angle / rng;
-		out.r = 1 - interp;
-		out.g = interp;
-		out.b = 0;
-	}
-	
-	out.a = 1;
 	return out;
 }
+rgb hsv2rgb(hsv in) {
+	double      hh, p, q, t, ff;
+	long        i;
+	rgb         out;
 
-float get_val(vec4& out) {
-	return glm::max(glm::max(out.r, out.g), out.b);
-}
-
-void apply_val(vec4& out, float val) {
-	float scale = val / get_val(out);
-	out.r *= scale;
-	out.g *= scale;
-	out.b *= scale;
-}
-
-float get_saturation(vec4& out) {
-
-}
-
-vec4 apply_saturation(vec4& out, float sat) {
-
-}
-
-bool GuiState::val_sat_edit(vec4 rect, vec4& col) {
-	bool active = glfwGetMouseButton(win->winp, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS && inside(rect);
-
-	if (active) {
-		apply_saturation(col, (rect.x - win->cursor().x) / rect.z);
-		apply_val(col, (rect.y - win->cursor().y) / rect.w);
+	if (in.s <= 0.0) {       // < is bogus, just shuts up warnings
+		out.r = in.v;
+		out.g = in.v;
+		out.b = in.v;
+		return out;
 	}
+	hh = in.h;
+	if (hh >= 360.0) hh = 0.0;
+	hh /= 60.0;
+	i = (long)hh;
+	ff = hh - i;
+	p = in.v * (1.0 - in.s);
+	q = in.v * (1.0 - (in.s * ff));
+	t = in.v * (1.0 - (in.s * (1.0 - ff)));
 
-	vec2 dot_pos = vec2(rect.x + get_val(col) * rect.z, rect.y + get_saturation(col) * rect.w);
+	switch (i) {
+	case 0:
+		out.r = in.v;
+		out.g = t;
+		out.b = p;
+		break;
+	case 1:
+		out.r = q;
+		out.g = in.v;
+		out.b = p;
+		break;
+	case 2:
+		out.r = p;
+		out.g = in.v;
+		out.b = t;
+		break;
 
-	return active;
+	case 3:
+		out.r = p;
+		out.g = q;
+		out.b = in.v;
+		break;
+	case 4:
+		out.r = t;
+		out.g = p;
+		out.b = in.v;
+		break;
+	case 5:
+	default:
+		out.r = in.v;
+		out.g = p;
+		out.b = q;
+		break;
+	}
+	return out;
 }
 
 void GuiState::ColorPicker(vec4 rect, vec4& col) {
 
-	item_howered = inside(rect);
-	if (item_howered) {
+	if (inside(rect)) {
 		rect.x -= 3;
 		rect.y -= 3;
 		rect.z += 6;
 		rect.w += 6;
 	}
 
-	float sv_size = rect.z / 1.5;
-	vec4 hs_edit_rec = vec4(rect.x + (rect.z - sv_size) / 2, rect.y + (rect.z - sv_size) / 2, sv_size, sv_size);
-	bool hs_active = val_sat_edit(hs_edit_rec, col);
-	 
+	bool active = glfwGetMouseButton(win->winp, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS;
+	vec2 center = vec2((rect.x + rect.z / 2), (rect.y + rect.w / 2));
+	vec2 curs = win->cursor();
 
-	float angle = col_to_angle(col);
 
 	float dot_size = 20;
 	float dot_padding = 30;
-	vec2 center = vec2((rect.x + rect.z / 2), (rect.y + rect.w / 2));
-	vec2 dot_pos = vec2((rect.z - dot_padding) * cos(angle) / 2, (rect.w - dot_padding) * sin(angle) / 2);
-	vec4 dot_rec = vec4(center.x + dot_pos.x - dot_size / 2, center.y + dot_pos.y - dot_size / 2, dot_size, dot_size);
+	float sv_size = rect.z / 2;
+	vec4 hs_edit_rec = vec4(rect.x + (rect.z - sv_size) / 2, rect.y + (rect.w - sv_size) / 2, sv_size, sv_size);
+	
+	hsv hsvin = rgb2hsv({ col.r, col.g, col.b });
+	float angle = hsvin.h / 360 * (2 * PI);
 
-	Icon(dot_rec, "A:/src/ogl/rsc/icons/Dot.png");
-	Icon(rect, "A:/src/ogl/rsc/icons/ColorPickerRGB.png");
+	if (active) {
+		if (inside(rect)) {
+			if (inside(hs_edit_rec)) {
+				hsvin.s = ((curs.x - hs_edit_rec.x) / hs_edit_rec.z);
+				hsvin.v = ((curs.y - hs_edit_rec.y) / hs_edit_rec.w);
+				
+				CLAMP(hsvin.s, 0, 1);
+				CLAMP(hsvin.v, 0, 1);
+			}
+			else {
+				angle = atan2((curs.y - center.y), (curs.x - center.x));
+				angle = angle > 0 ? angle : 2 * PI + angle;
 
-	if (!hs_active && glfwGetMouseButton(win->winp, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) {
-		if (item_howered) {
-			vec2 curs = win->cursor();
-			float dx = (curs.x - center.x);
-			float dy = (curs.y - center.y);
-			angle = atan2(dy, dx);
-			angle = angle > 0 ? angle : 2 * PI + angle;
-			col = angle_to_col(angle);
+				hsvin.h = (angle / (2 * PI)) * 360;
+			}
 		}
 	}
+
+	rgb out = hsv2rgb(hsvin);
+	col.r = out.r;
+	col.g = out.g;
+	col.b = out.b;
+
+	vec2 dot_pos = vec2((rect.z - dot_padding) * cos(angle) / 2, (rect.w - dot_padding) * sin(angle) / 2);
+	vec4 dot_rec = vec4(center.x + dot_pos.x - dot_size / 2, center.y + dot_pos.y - dot_size / 2, dot_size, dot_size);
+	vec4 vs_dot_rec = vec4(hs_edit_rec.x + hs_edit_rec.z * hsvin.s - dot_size / 2, hs_edit_rec.y + hs_edit_rec.w * hsvin.v - dot_size / 2, dot_size, dot_size);
+	
+	Icon(dot_rec, "A:/src/ogl/rsc/icons/Dot.png");
+	Icon(vs_dot_rec, "A:/src/ogl/rsc/icons/Dot.png");
+	Icon(hs_edit_rec, "A:/src/ogl/rsc/icons/HSV.png");
+	Icon(rect, "A:/src/ogl/rsc/icons/ColorPickerRGB.png");
 }
 
 GuiState::~GuiState() {

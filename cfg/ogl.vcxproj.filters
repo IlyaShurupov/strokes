@@ -106,5 +106,11 @@
     <None Include="..\rsc\shaders\stroke.vert">
       <Filter>rsc</Filter>
     </None>
+    <None Include="..\rsc\shaders\quad.frag">
+      <Filter>rsc</Filter>
+    </None>
+    <None Include="..\rsc\shaders\quad.vert">
+      <Filter>rsc</Filter>
+    </None>
   </ItemGroup>
 </Project>

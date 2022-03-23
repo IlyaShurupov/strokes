@@ -55,6 +55,8 @@
     <None Include="..\rsc\shaders\default.frag" />
     <None Include="..\rsc\shaders\default.vert" />
     <None Include="..\rsc\shaders\Passthrough.vert" />
+    <None Include="..\rsc\shaders\quad.frag" />
+    <None Include="..\rsc\shaders\quad.vert" />
     <None Include="..\rsc\shaders\stroke.frag" />
     <None Include="..\rsc\shaders\stroke.vert" />
     <None Include="..\rsc\shaders\test.frag" />
