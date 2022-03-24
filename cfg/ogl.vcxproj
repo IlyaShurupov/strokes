@@ -220,7 +220,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>imgui.lib;lunasvg.lib;soil.lib;osystem.lib;glew32sd.lib;string.lib;container.lib;opengl32.lib;glfw3.lib;allocator.lib;common.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)..\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\allocator\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\string\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\container\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\common\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\imgui-vs\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glew\lib\$(Configuration)\\$(Platform);$(ProjectDir)..\..\glfw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\types\modules\osystem\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\soil\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\lunasvg\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -277,7 +277,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>imgui.lib;lunasvg.lib;soil.lib;osystem.lib;glew32sd.lib;string.lib;container.lib;opengl32.lib;glfw3.lib;allocator.lib;common.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)..\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\allocator\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\string\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\container\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\common\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\imgui-vs\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glew\lib\$(Configuration)\\$(Platform);$(ProjectDir)..\..\glfw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\types\modules\osystem\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\soil\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\lunasvg\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

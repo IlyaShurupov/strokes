@@ -28,6 +28,9 @@ public:
 
 	void FloatSlider(vec4 rect, float& val, float min, float max);
 	void ColorPicker(vec4 rect, vec4& col);
-	bool val_sat_edit(vec4 rect, vec4& col);
+	
+	void DrawCircleFilled(const vec4& rect, const vec4& col);
+	void DrawCircleFilled(vec2 pos, float rad, const vec4& col);
+
 	~GuiState();
 };

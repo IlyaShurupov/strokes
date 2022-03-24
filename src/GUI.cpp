@@ -207,6 +207,42 @@ rgb hsv2rgb(hsv in) {
 	return out;
 }
 
+void GuiState::DrawCircleFilled(const vec4& rect, const vec4& col) {
+
+	glViewport(0, 0, win->size.x, win->size.y);
+	DrawCircleFilled({ rect.x + rect.z / 2, rect.y + rect.w / 2 }, rect.w / 2, col);
+}
+
+void GuiState::DrawCircleFilled(vec2 pos, float rad, const vec4& col) {
+	
+	static alni precision = 41;
+
+	glColor4f(col.r, col.g, col.b, col.a);
+
+	double twicePi = 2.0 * 3.142;
+
+	glBegin(GL_TRIANGLE_FAN);
+
+	pos.x = ((pos.x / win->size.x) - 0.5) * 2;
+	pos.y = ((pos.y / win->size.y) - 0.5) * 2;
+
+	glVertex2f(pos.x, pos.y);
+
+	for (alni i = 0; i <= precision; i++) {
+		float facx = 2 * rad / win->size.x;
+		float facy = 2 * rad / win->size.y;
+
+		float x = (cos(i * twicePi / precision)) * facx / 2;
+		float y = (sin(i * twicePi / precision)) * facy / 2;
+
+		x = pos.x + x;
+		y = pos.y + y;
+
+		glVertex2f(x, y);
+	}
+	glEnd();
+}
+
 void GuiState::ColorPicker(vec4 rect, vec4& col) {
 
 	if (inside(rect)) {
@@ -256,8 +292,24 @@ void GuiState::ColorPicker(vec4 rect, vec4& col) {
 	vec4 dot_rec = vec4(center.x + dot_pos.x - dot_size / 2, center.y + dot_pos.y - dot_size / 2, dot_size, dot_size);
 	vec4 vs_dot_rec = vec4(hs_edit_rec.x + hs_edit_rec.z * hsvin.s - dot_size / 2, hs_edit_rec.y + hs_edit_rec.w * hsvin.v - dot_size / 2, dot_size, dot_size);
 	
-	Icon(dot_rec, "../rsc/icons/Dot.png");
-	Icon(vs_dot_rec, "../rsc/icons/Dot.png");
+	if (inside(rect)) {
+		if (inside(hs_edit_rec)) {
+			vs_dot_rec.x -= 3;
+			vs_dot_rec.y -= 3;
+			vs_dot_rec.z += 6;
+			vs_dot_rec.w += 6;
+		}
+		else {
+			dot_rec.x -= 3;
+			dot_rec.y -= 3;
+			dot_rec.z += 6;
+			dot_rec.w += 6;
+		}
+	}
+
+	DrawCircleFilled(dot_rec, vec4(1));
+	DrawCircleFilled(vs_dot_rec, vec4(1));
+
 	Icon(hs_edit_rec, "../rsc/icons/HSV.png");
 	Icon(rect, "../rsc/icons/ColorPickerRGB.png");
 }

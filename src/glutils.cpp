@@ -151,3 +151,22 @@ GLuint get_tex(const char* TexId) {
 	}
 	return out;
 }
+
+
+void drawCurcle(vec2 pos, double radius, vec4 col) {
+
+	static alni precision = 40;
+
+	glColor4f(col.r, col.g, col.b, col.a);
+
+	double twicePi = 2.0 * 3.142;
+	
+	glBegin(GL_TRIANGLE_FAN); //BEGIN CIRCLE
+	glVertex2f(pos.x, pos.y); // center of circle
+	
+	for (alni i = 0; i <= precision; i++) {
+		glVertex2f((pos.x + (radius * cos(i * twicePi / precision))), (pos.y + (radius * sin(i * twicePi / precision))));
+	}
+	glEnd(); //END
+
+}
