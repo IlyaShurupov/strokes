@@ -85,8 +85,8 @@ void GuiState::FloatSlider(vec4 rect, float& val, float min, float max) {
 		controll_rec.z += 4;
 	}
 
-	Icon(controll_rec, "A:/src/ogl/rsc/icons/SliderControl.png");
-	Icon(rect, "A:/src/ogl/rsc/icons/Slider.png");
+	Icon(controll_rec, "../rsc/icons/SliderControl.png");
+	Icon(rect, "../rsc/icons/Slider.png");
 	
 	if (glfwGetMouseButton(win->winp, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) {
 		if (item_howered) {
@@ -256,10 +256,10 @@ void GuiState::ColorPicker(vec4 rect, vec4& col) {
 	vec4 dot_rec = vec4(center.x + dot_pos.x - dot_size / 2, center.y + dot_pos.y - dot_size / 2, dot_size, dot_size);
 	vec4 vs_dot_rec = vec4(hs_edit_rec.x + hs_edit_rec.z * hsvin.s - dot_size / 2, hs_edit_rec.y + hs_edit_rec.w * hsvin.v - dot_size / 2, dot_size, dot_size);
 	
-	Icon(dot_rec, "A:/src/ogl/rsc/icons/Dot.png");
-	Icon(vs_dot_rec, "A:/src/ogl/rsc/icons/Dot.png");
-	Icon(hs_edit_rec, "A:/src/ogl/rsc/icons/HSV.png");
-	Icon(rect, "A:/src/ogl/rsc/icons/ColorPickerRGB.png");
+	Icon(dot_rec, "../rsc/icons/Dot.png");
+	Icon(vs_dot_rec, "../rsc/icons/Dot.png");
+	Icon(hs_edit_rec, "../rsc/icons/HSV.png");
+	Icon(rect, "../rsc/icons/ColorPickerRGB.png");
 }
 
 GuiState::~GuiState() {

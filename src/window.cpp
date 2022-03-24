@@ -62,6 +62,7 @@ void window::init() {
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
+	glEnable(GL_BLEND_SRC);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);

@@ -8,5 +8,9 @@ uniform sampler2D renderedTexture;
 uniform float time;
 
 void main(){
-	color = texture(renderedTexture, UV);
+	vec4 texColor = texture(renderedTexture, UV);
+	if(texColor.a < 0.2)
+        discard;
+
+	color = texColor;
 }

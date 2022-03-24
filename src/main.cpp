@@ -195,16 +195,16 @@ public:
 		};
 
 
-		if (gui.button(get_rect(rect), NULL, "A:/src/ogl/rsc/icons/Backward.png")) {
+		if (gui.button(get_rect(rect), NULL, "../rsc/icons/Backward.png")) {
 			layer.undo();
 		}
-		if (gui.button(get_rect(rect), NULL, "A:/src/ogl/rsc/icons/Forward.png")) {
+		if (gui.button(get_rect(rect), NULL, "../rsc/icons/Forward.png")) {
 			layer.redo();
 		}
 
 		{
 			vec4 butrec = get_rect(rect);
-			if (gui.button(butrec, NULL, sampler.eraser? "A:/src/ogl/rsc/icons/Eraser.png" : "A:/src/ogl/rsc/icons/Pen.png")) {
+			if (gui.button(butrec, NULL, sampler.eraser? "../rsc/icons/Eraser.png" : "../rsc/icons/Pen.png")) {
 				sampler.eraser = !sampler.eraser;
 			}
 			
@@ -227,16 +227,16 @@ public:
 			}
 		}
 
-		if (gui.button(get_rect(rect), NULL, "A:/src/ogl/rsc/icons/Clear.png")) {
+		if (gui.button(get_rect(rect), NULL, "../rsc/icons/Clear.png")) {
 			alni len = layer.strokes.Len();
 			for (alni idx = 0; idx < len; idx++) {
 				layer.undo();
 			}
 		}
-		if (gui.button(get_rect(rect), NULL, "A:/src/ogl/rsc/icons/Debug.png")) {
+		if (gui.button(get_rect(rect), NULL, "../rsc/icons/Debug.png")) {
 			show_debug = !show_debug;
 		}
-		if (gui.button(get_rect(rect), NULL, "A:/src/ogl/rsc/icons/Quit.png")) {
+		if (gui.button(get_rect(rect), NULL, "../rsc/icons/Quit.png")) {
 			quit = 1;
 		}
 	}
