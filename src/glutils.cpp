@@ -9,9 +9,9 @@
 #include "strings.h"
 
 #include "SOIL/soil.h"
-#include <lunasvg.h>
+//#include <lunasvg.h>
 
-using namespace lunasvg;
+//using namespace lunasvg;
 
 struct texture_drawer_data {
 
@@ -124,8 +124,8 @@ GLuint load_texture(string name) {
 	GLuint tex_2d = 0;
 
 	if (0) {
-		auto document = Document::loadFromFile("tiger.svg");
-		auto bitmap = document->renderToBitmap();
+		//auto document = Document::loadFromFile("tiger.svg");
+		//auto bitmap = document->renderToBitmap();
 	}
 	else {
 		tex_2d = SOIL_load_OGL_texture(name.cstr(), SOIL_LOAD_RGBA, SOIL_CREATE_NEW_ID,
