@@ -310,7 +310,16 @@ void GuiState::ColorPicker(vec4 rect, vec4& col) {
 	DrawCircleFilled(dot_rec, vec4(1));
 	DrawCircleFilled(vs_dot_rec, vec4(1));
 
-	Icon(hs_edit_rec, "../rsc/icons/HSV.png");
+	glViewport(hs_edit_rec.x, hs_edit_rec.y, hs_edit_rec.z, hs_edit_rec.w);
+
+	rgb hue_preview_col = hsv2rgb({ hsvin.h, 1, 1});
+	glBegin(GL_QUADS);
+	glColor4f(1, 1, 1, 1); glVertex2f(-1.f, 1.f);
+	glColor4f(0, 0, 0, 1); glVertex2f(-1.f, -1.f);
+	glColor4f(0, 0, 0, 1); glVertex2f(1.f, -1.f); 
+	glColor4f(hue_preview_col.r, hue_preview_col.g, hue_preview_col.b, 1); glVertex2f(1.f, 1.f);
+	glEnd();
+
 	Icon(rect, "../rsc/icons/ColorPickerRGB.png");
 }
 

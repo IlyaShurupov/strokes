@@ -64,17 +64,8 @@
     <None Include="..\rsc\shaders\Texture.frag" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\glew\build\vc12\glewinfo.vcxproj">
-      <Project>{8efb5dcb-c0c4-1670-5938-a0e0f1a1c5ea}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\glew\build\vc12\glew_shared.vcxproj">
-      <Project>{55ae3d72-7de6-f19f-aef2-9ae8ca26cf3d}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\glew\build\vc12\glew_static.vcxproj">
       <Project>{664e6f0d-6784-4760-9565-d54f8eb1edf4}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\glew\build\vc12\visualinfo.vcxproj">
-      <Project>{79aa8443-86f4-649a-0beb-0cb5e51b7d7e}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\glfw\config\src\glfw.vcxproj">
       <Project>{8fb23769-990f-3014-9d36-cd40b93cf151}</Project>
@@ -107,7 +98,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{FEE95CB2-CBDB-4114-8C94-80941A8DB61B}</ProjectGuid>
+    <ProjectGuid>{85339FDF-295F-4082-B07A-06F05729486E}</ProjectGuid>
     <RootNamespace>rtc</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>ogl</ProjectName>
@@ -220,7 +211,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>imgui.lib;lunasvg.lib;soil.lib;osystem.lib;glew32sd.lib;string.lib;container.lib;opengl32.lib;glfw3.lib;allocator.lib;common.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)..\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\allocator\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\string\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\container\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\common\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\imgui-vs\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glew\lib\$(Configuration)\\$(Platform);$(ProjectDir)..\..\glfw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\types\modules\osystem\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\soil\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\lunasvg\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -273,11 +264,11 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\osystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\imgui\;$(ProjectDir)..\..\imgui\backends;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\implot\;$(ProjectDir)..\..\imgui-vs\amgui;$(ProjectDir)..\..\glm;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include</AdditionalIncludeDirectories>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>imgui.lib;lunasvg.lib;soil.lib;osystem.lib;glew32sd.lib;string.lib;container.lib;opengl32.lib;glfw3.lib;allocator.lib;common.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)..\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\allocator\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\string\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\container\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\common\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\imgui-vs\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glew\lib\$(Configuration)\\$(Platform);$(ProjectDir)..\..\glfw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\types\modules\osystem\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\soil\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\lunasvg\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
