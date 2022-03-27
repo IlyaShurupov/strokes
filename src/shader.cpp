@@ -5,8 +5,10 @@
 #include "array.h"
 
 #include "array.h"
-#include "osystem.h"
+#include "filesystem.h"
 #include "..\inc\shader.h"
+
+#include "new.h"
 
 using namespace ogl;
 
@@ -36,7 +38,6 @@ bool shader::compile_shader(const char* ShaderCode, GLuint ShaderID) {
 
 void shader::load(const char* pvert, const char* pgeom, const char* pfrag) {
 
-
 	// Create the shaders
 	VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
@@ -45,23 +46,23 @@ void shader::load(const char* pvert, const char* pgeom, const char* pfrag) {
 	GLint Result = GL_FALSE;
 	int InfoLogLength;
 
-	std::string vert = std::string(shader_path.cstr()) + pvert + ".vert";
-	std::string geom = GeometryShaderID ? std::string(shader_path.cstr()) + pgeom + ".geom" : "";
-	std::string frag = std::string(shader_path.cstr()) + pfrag + ".frag";
+	string vert = sfmt("%s%c.vert", shader_path, pvert);
+  string geom = pgeom ? sfmt("%s%c.geom", shader_path, pgeom) : " ";
+  string frag = sfmt("%s%c.frag", shader_path, pfrag);
 
-	printf("Compiling shader : %s\n", vert.c_str());
-	string tmp = read_file(vert.c_str());
+	printf("Compiling shader : %s\n", vert.cstr());
+	string tmp = read_file(vert.cstr());
 	compile_shader(tmp.get_writable(), VertexShaderID);
 
 	if (GeometryShaderID) {
 		// Compile Geometry Shader
-		printf("Compiling shader : %s\n", geom.c_str());
-		compile_shader(read_file(geom.c_str()).get_writable(), GeometryShaderID);
+		printf("Compiling shader : %s\n", geom.cstr());
+		compile_shader(read_file(geom.cstr()).get_writable(), GeometryShaderID);
 	}
 
 	// Compile Fragment Shader
-	printf("Compiling shader : %s\n", frag.c_str());
-	compile_shader(read_file(frag.c_str()).get_writable(), FragmentShaderID);
+	printf("Compiling shader : %s\n", frag.cstr());
+	compile_shader(read_file(frag.cstr()).get_writable(), FragmentShaderID);
 
 	// Link the program
 	printf("Linking program\n");

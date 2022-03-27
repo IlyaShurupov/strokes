@@ -11,7 +11,7 @@
 #include "GUI.h"
 
 #include "common.h"
-#include "osystem.h"
+#include "filesystem.h"
 
 #include "imgui.h"
 #include "imgui_utils.h"
@@ -72,7 +72,7 @@ public:
 
 	StrokeApp(vec2 size) : ogl(), window(size), fbo(size, vec4(0)), gui(&window) {
 
-		osfile db("data.strokes", osfile_openflags::LOAD);
+		File db("data.strokes", osfile_openflags::LOAD);
 		load(db);
 		db.close();
 
@@ -305,7 +305,7 @@ public:
 		return !quit && window.CloseSignal();
 	}
 
-	void save(osfile& file) {
+	void save(File& file) {
 		StrokeApp_SaveHeader head(layer.strokes.Len());
 		file.write<StrokeApp_SaveHeader>(&head);
 
@@ -320,7 +320,7 @@ public:
 		}
 	}
 
-	void load(osfile& file) {
+	void load(File& file) {
 		StrokeApp_SaveHeader head;
 		file.read<StrokeApp_SaveHeader>(&head);
 		if (!memequal(head.name, "strokes", slen("strokes"))) {
@@ -352,7 +352,7 @@ public:
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 
-		osfile db;
+		File db;
 		db.open("data.strokes", osfile_openflags::SAVE);
 		save(db);
 		db.close();
