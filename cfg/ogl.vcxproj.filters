@@ -1,43 +1,52 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="src">
-      <UniqueIdentifier>{2295a15b-33b8-436e-9da7-a7060778a4f1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="inc">
-      <UniqueIdentifier>{a550040d-c870-44f1-971c-be770b8ca9d4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="rsc">
       <UniqueIdentifier>{ed9e5b01-720d-4b63-b1d5-8401cab738a2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="inc">
+      <UniqueIdentifier>{0999e7e7-eaa7-4438-a31c-820195535f86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{76373d97-cdf9-4221-b289-5e8909b9a23b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\main.cpp">
+    <ClCompile Include="..\src\strokes.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gui.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\app.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\entry.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\inc\objloader.h">
+    <ClInclude Include="..\inc\strokes.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\gui.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\app.h">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\rsc\shaders\default.frag">
-      <Filter>rsc</Filter>
-    </None>
-    <None Include="..\rsc\shaders\default.vert">
-      <Filter>rsc</Filter>
-    </None>
-    <None Include="..\rsc\shaders\Passthrough.vert">
-      <Filter>rsc</Filter>
-    </None>
     <None Include="..\rsc\shaders\Texture.frag">
       <Filter>rsc</Filter>
     </None>
-    <None Include="..\rsc\shaders\test.frag">
+    <None Include="..\rsc\shaders\stroke.frag">
       <Filter>rsc</Filter>
     </None>
-    <None Include="..\rsc\shaders\test.vert">
+    <None Include="..\rsc\shaders\stroke.vert">
+      <Filter>rsc</Filter>
+    </None>
+    <None Include="..\rsc\shaders\Texture.vert">
       <Filter>rsc</Filter>
     </None>
   </ItemGroup>
