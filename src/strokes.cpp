@@ -3,46 +3,6 @@
 
 #include "glutils.h"
 
-camera::camera() {
-	reset();
-}
-
-vec3 camera::project(vec2 normalized) {
-	vec3 forw = normalize(target - pos);
-	vec3 right = normalize(cross(forw, vec3(0, 1, 0)));
-	vec3 up = cross(right, forw);
-
-	float scale = tan(radians(fov) / 2) * length(target - pos);
-	vec3 out = target + (normalized.x * scale * right * ratio) + (normalized.y * scale * up);
-	return out;
-}
-
-vec2 camera::project(vec3 world) {
-	vec4 transformed = (projmat() * viewmat()) * vec4(world, 1);
-	vec2 screen_pos = vec2(transformed.x / transformed.w, transformed.y / transformed.w);
-	return screen_pos;
-}
-
-void camera::reset() {
-	pos = vec3(0, 0, 4);
-	target = vec3(0, 0, 0);
-
-	fov = 45.f;
-	near = 0.01f;
-	far = 100.f;
-	orto = false;
-	ratio = 4 / 3.f;
-}
-
-mat4 camera::projmat() {
-	return  glm::perspective(glm::radians((float)fov), (float)ratio, (float)near, (float)far);
-}
-
-mat4 camera::viewmat() {
-	return glm::lookAt(pos, target, glm::vec3(0, 1, 0));
-}
-
-
 void stroke_mesh::init() {
 	static ogl::shader shader("stroke", NULL, "stroke");
 	this->shader = &shader;
@@ -68,7 +28,6 @@ void stroke_mesh::operator=(const stroke_mesh& in) {
 	init();
 
 	vbo = in.vbo;
-	omatrix = in.omatrix;
 	color = in.color;
 
 	bind_buffers();
@@ -83,13 +42,13 @@ void stroke_mesh::bind_buffers() {
 }
 
 
-void stroke_mesh::draw_mesh(const mat4& proj_mat, const mat4& view_mat) {
+void stroke_mesh::draw_mesh(const mat4f& proj_mat, const mat4f& view_mat) {
 
 	glBindVertexArray(VertexArrayID);
 
 	shader->bind();
 	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj_mat * view_mat)[0][0]);
-	glUniform4fv(ColorID, 1, &color.x);
+	glUniform4fv(ColorID, 1, &color.rgbs.r);
 
 	// 1st attribute buffer : vertices
 	glEnableVertexAttribArray(0);
@@ -111,12 +70,12 @@ stroke_mesh::~stroke_mesh() {
 
 
 stroke_point::stroke_point() {
-	pos = vec3(0, 0, 0);
-	normal = vec3(0, 1, 0);
+	pos = vec3f(0, 0, 0);
+	normal = vec3f(0, 1, 0);
 	thikness = 0.06;
 }
 
-void stroke::gen_quad(alni pidx, stroke_point* p1, stroke_point* p2, vec3 dir1, vec3 dir2) {
+void stroke::gen_quad(alni pidx, stroke_point* p1, stroke_point* p2, vec3f dir1, vec3f dir2) {
 	/*
 		vec3 perp = normalize(cross(p1->normal, p2->pos - p1->pos)) * p1->thikness;
 		float cosa1 = dot(perp, dir1) / (dir1.length() * perp.length());
@@ -125,10 +84,10 @@ void stroke::gen_quad(alni pidx, stroke_point* p1, stroke_point* p2, vec3 dir1, 
 		float thickness2 = -p2->thikness / cosa2;
 	*/
 
-	vec3 v1 = p1->pos + dir1 * p1->thikness;
-	vec3 v2 = p2->pos + dir2 * p2->thikness;
-	vec3 v3 = p2->pos - dir2 * p2->thikness;
-	vec3 v4 = p1->pos - dir1 * p1->thikness;
+	vec3f v1 = p1->pos + dir1 * p1->thikness;
+	vec3f v2 = p2->pos + dir2 * p2->thikness;
+	vec3f v3 = p2->pos - dir2 * p2->thikness;
+	vec3f v4 = p1->pos - dir1 * p1->thikness;
 
 	alni vidx = pidx * 6;
 
@@ -140,26 +99,26 @@ void stroke::gen_quad(alni pidx, stroke_point* p1, stroke_point* p2, vec3 dir1, 
 	mesh.vbo[vidx + 5] = v1;
 }
 
-vec3 stroke::split_dir(vec3 v1, vec3 v2, const vec3& norm) {
+vec3f stroke::split_dir(vec3f v1, vec3f v2, const vec3f& norm) {
 
-	v1 = normalize(v1);
-	v2 = normalize(v2);
+	v1.normalize();
+	v2.normalize();
 
-	vec3 plane_normal;
+	vec3f plane_normal;
 
-	float val = glm::dot(v2, v1);
+	halnf val = v2.dot(v1);
+
 	if (val > -0.999999) {
-		vec3 crossp = cross(v1, v2);
-		float rot_angle = acos(glm::dot(v1, v2)) / 2.f;
-		mat4 rot_matrix = rotate(rot_angle, crossp);
-		vec3 middle = rot_matrix * vec4(v1.x, v1.y, v1.z, 0);
-		plane_normal = cross(middle, crossp);
+		vec3f crossp = v1.cross(v2);
+		mat3f rot_matrix = mat3f::rotmat(crossp, trigs::acos(v1.dot(v2)) / 2.f);
+		vec3f middle = rot_matrix * v1;
+		plane_normal = middle.cross(crossp);
 	}
 	else {
 		plane_normal = v2;
 	}
 
-	return glm::cross(plane_normal, norm);
+	return plane_normal.cross(norm);
 }
 
 void stroke::gen_mesh() {
@@ -175,8 +134,8 @@ void stroke::gen_mesh() {
 		stroke_point pt2 = points[pidx + 1];
 		stroke_point pt3;
 
-		glm::vec3 dir1;
-		glm::vec3 dir2;
+		vec3f dir1;
+		vec3f dir2;
 
 		if (pidx > 0) {
 			pt0 = points[pidx - 1];
@@ -197,17 +156,17 @@ void stroke::gen_mesh() {
 		dir1 = split_dir(pt0.pos - pt1.pos, pt2.pos - pt1.pos, pt1.normal);
 		dir2 = split_dir(pt1.pos - pt2.pos, pt3.pos - pt2.pos, pt2.normal);
 
-		if (glm::dot(dir1, dir2) < 0) {
+		if (dir1.dot(dir2) < 0) {
 			dir1 *= -1;
 		}
 
-		gen_quad(pidx, &pt1, &pt2, normalize(dir1), normalize(dir2));
+		gen_quad(pidx, &pt1, &pt2, dir1.unitv(), dir2.unitv());
 	}
 
 	mesh.bind_buffers();
 }
 
-void stroke::drawcall(const mat4& proj_mat, const mat4& view_mat) {
+void stroke::drawcall(const mat4f& proj_mat, const mat4f& view_mat) {
 	mesh.draw_mesh(proj_mat, view_mat);
 }
 
@@ -235,13 +194,13 @@ void drawlayer::add_stroke(const stroke& str) {
 	// strokes.Last()->data.gen_mesh();
 }
 
-void drawlayer::draw(const mat4& proj_mat, const mat4& view_mat) {
+void drawlayer::draw(const mat4f& proj_mat, const mat4f& view_mat) {
 	for (list_node<stroke>* str = strokes.Last(); str; str = str->prev) {
 		str->data.drawcall(proj_mat, view_mat);
 	}
 }
 
-void inputsmpler::add_point(const vec3& pos, const vec3& norm, float thickness) {
+void inputsmpler::add_point(const vec3f& pos, const vec3f& norm, float thickness) {
 	stroke_point p;
 	p.pos = pos;
 	p.normal = norm;
@@ -249,35 +208,35 @@ void inputsmpler::add_point(const vec3& pos, const vec3& norm, float thickness) 
 	input.add_point(p);
 }
 
-bool inputsmpler::passed(const vec3& point) {
+bool inputsmpler::passed(const vec3f& point) {
 	if (input.points.length) {
-		return length(point - input.points[input.points.length - 1].pos) > precision;
+		return (point - input.points[input.points.length - 1].pos).length() > precision;
 	}
 	return true;
 }
 
-void inputsmpler::start(const vec2& cpos, camera* cam) {
+void inputsmpler::start(const vec2f& cpos, camera* cam) {
 	input.points.Free();
-	vec3 point = cam->project(cpos);
-	add_point(point, normalize(cam->target - cam->pos), 0.01);
+	vec3f point = cam->project(cpos);
+	add_point(point, cam->tmat.K, 0.01);
 }
 
-void inputsmpler::sample_util(const vec2& cpos, camera* cam) {
-	vec3 point = cam->project(cpos);
+void inputsmpler::sample_util(const vec2f& cpos, camera* cam) {
+	vec3f point = cam->project(cpos);
 	if (passed(point)) {
-		add_point(point, normalize(cam->target - cam->pos), thickness);
+		add_point(point, cam->tmat.K, thickness);
 	}
 }
 
-void inputsmpler::erase_util(list<stroke>* pull, list<stroke>* undo, const vec2& cpos, camera* cam) {
+void inputsmpler::erase_util(list<stroke>* pull, list<stroke>* undo, const vec2f& cpos, camera* cam) {
 
 	list_node<stroke>* str = pull->First();
 	while (str) {
 		bool remove = false;
 
 		for (auto pnt : str->data.points) {
-			vec2 screen_pos = cam->project(pnt.data().pos);
-			if (glm::length((screen_pos - cpos)) < eraser_size) {
+			vec2f screen_pos = cam->project(pnt.data().pos);
+			if ((screen_pos - cpos).length() < eraser_size) {
 				remove = true;
 				break;
 			}
@@ -285,7 +244,6 @@ void inputsmpler::erase_util(list<stroke>* pull, list<stroke>* undo, const vec2&
 
 		if (remove) {
 			list_node<stroke>* tmp = str->next;
-
 			undo->PushBack(str->data);
 			pull->DelNode(str);
 			str = tmp;
@@ -296,8 +254,8 @@ void inputsmpler::erase_util(list<stroke>* pull, list<stroke>* undo, const vec2&
 	}
 }
 
-void inputsmpler::finish(const vec2& cpos, camera* cam) {
-	if (input.points.length == 1) {
+void inputsmpler::finish(const vec2f& cpos, camera* cam) {
+	if (input.points.length <= 1) {
 		input.points.Free();
 	}
 	else {
@@ -305,7 +263,7 @@ void inputsmpler::finish(const vec2& cpos, camera* cam) {
 	}
 }
 
-void inputsmpler::sample(list<stroke>* pull, list<stroke>* undo, vec2 curs, float pressure, camera* cam) {
+void inputsmpler::sample(list<stroke>* pull, list<stroke>* undo, vec2f curs, float pressure, camera* cam) {
 
 	this->input.mesh.color = stroke_col;
 	this->pressure = pressure;
@@ -338,7 +296,7 @@ void inputsmpler::sample(list<stroke>* pull, list<stroke>* undo, vec2 curs, floa
 	}
 }
 
-void inputsmpler::draw(const mat4& proj_mat, const mat4& view_mat) {
+void inputsmpler::draw(const mat4f& proj_mat, const mat4f& view_mat) {
 
 	static int prev_len = input.points.length;
 	if (input.points.length > 1) {

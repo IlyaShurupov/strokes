@@ -6,33 +6,11 @@
 
 #include "array.h"
 #include "list.h"
-
-struct camera {
-
-	vec3 pos;
-	vec3 target;
-
-	bool orto;
-
-	float fov;
-	float near;
-	float far;
-	float ratio;
-
-	camera();
-	void reset();
-	mat4 projmat();
-	mat4 viewmat();
-
-	vec3 project(vec2 normalized);
-	vec2 project(vec3 world);
-};
+#include "topology.h"
 
 struct stroke_mesh {
 
-	Array<vec3> vbo; // position
-
-	mat4 omatrix = glm::mat4(1.f);
+	Array<vec3f> vbo; // position
 
 	ogl::shader* shader;
 	GLuint VertexArrayID;
@@ -40,7 +18,7 @@ struct stroke_mesh {
 	GLuint MatrixID;
 	GLuint ColorID;
 
-	vec4 color = vec4(1);
+	rgba color = rgba(1);
 
 	void init();
 
@@ -48,14 +26,14 @@ struct stroke_mesh {
 	void operator=(const stroke_mesh& in);
 
 	void bind_buffers();
-	void draw_mesh(const mat4& proj_mat, const mat4& view_mat);
+	void draw_mesh(const mat4f& proj_mat, const mat4f& view_mat);
 	~stroke_mesh();
 };
 
 struct stroke_point {
 
-	vec3 pos;
-	vec3 normal;
+	vec3f pos;
+	vec3f normal;
 	float thikness;
 
 	stroke_point();
@@ -67,12 +45,12 @@ struct stroke {
 
 	stroke_mesh mesh;
 
-	void gen_quad(alni pidx, stroke_point* p1, stroke_point* p2, vec3 dir1, vec3 dir2);
-	vec3 split_dir(vec3 v1, vec3 v2, const vec3& norm);
+	void gen_quad(alni pidx, stroke_point* p1, stroke_point* p2, vec3f dir1, vec3f dir2);
+	vec3f split_dir(vec3f v1, vec3f v2, const vec3f& norm);
 	
 	void gen_mesh();
 
-	void drawcall(const mat4& proj_mat, const mat4& view_mat);
+	void drawcall(const mat4f& proj_mat, const mat4f& view_mat);
 	void add_point(const stroke_point& p);
 
 };
@@ -87,7 +65,7 @@ public:
 	void redo();
 
 	void add_stroke(const stroke& str);
-	void draw(const mat4& proj_mat, const mat4& view_mat);
+	void draw(const mat4f& proj_mat, const mat4f& view_mat);
 };
 
 class inputsmpler {
@@ -103,24 +81,24 @@ public:
 
 	float precision = 0.02;
 	float thickness = 0.04;
-	vec4 stroke_col = vec4(0, 0, 1, 1);
+	rgba stroke_col = rgba(0, 0, 1, 1);
 
 	bool eraser = false;
 	float eraser_size = 0.1f;
 
-	void add_point(const vec3& pos, const vec3& norm, float thickness);
-	bool passed(const vec3& point);
-	void start(const vec2& cpos, camera* cam);
-	void sample_util(const vec2& cpos, camera* cam);
-	void erase_util(list<stroke>* pull, list<stroke>* undo, const vec2& cpos, camera* cam);
-	void finish(const vec2& cpos, camera* cam);
+	void add_point(const vec3f& pos, const vec3f& norm, float thickness);
+	bool passed(const vec3f& point);
+	void start(const vec2f& cpos, camera* cam);
+	void sample_util(const vec2f& cpos, camera* cam);
+	void erase_util(list<stroke>* pull, list<stroke>* undo, const vec2f& cpos, camera* cam);
+	void finish(const vec2f& cpos, camera* cam);
 
 
 
 	// cpos - normilized coordinates from center
-	void sample(list<stroke>* pull, list<stroke>* undo, vec2 curs, float pressure, camera* cam);
+	void sample(list<stroke>* pull, list<stroke>* undo, vec2f curs, float pressure, camera* cam);
 	// screen space
-	void draw(const mat4& proj_mat, const mat4& view_mat);
+	void draw(const mat4f& proj_mat, const mat4f& view_mat);
 
 	bool active_state();
 	bool has_input();

@@ -3,15 +3,14 @@
 
 #include "strings.h"
 
-
 #include "window.h"
 
 class GuiState {
 	ogl::window* win;
-	void convert_rect(vec4& rec);
+	void convert_rect(vec4f& rec);
 
-	bool inside(const vec4& rec);
-	bool pushed(const vec4& rec);
+	bool inside(const vec4f& rec);
+	bool pushed(const vec4f& rec);
 
 public:
 
@@ -20,17 +19,17 @@ public:
 
 	GuiState(ogl::window* winp);
 
-	void Icon(vec4 rect, const char* IconId);
+	void Icon(vec4f rect, const char* IconId);
 
-	bool button(vec4 rect, const char* name, const char* IconId);
+	bool button(vec4f rect, const char* name, const char* IconId);
 
-	bool pupup(vec4 rect, float safe_padding);
+	bool pupup(vec4f rect, float safe_padding);
 
-	void FloatSlider(vec4 rect, float& val, float min, float max);
-	void ColorPicker(vec4 rect, vec4& col);
+	void FloatSlider(vec4f rect, float& val, float min, float max);
+	void ColorPicker(vec4f rect, rgba& col);
 	
-	void DrawCircleFilled(const vec4& rect, const vec4& col);
-	void DrawCircleFilled(vec2 pos, float rad, const vec4& col);
+	void DrawCircleFilled(const vec4f& rect, const rgba& col);
+	void DrawCircleFilled(vec2f pos, float rad, const rgba& col);
 
 	~GuiState();
 };

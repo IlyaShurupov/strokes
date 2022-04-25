@@ -9,28 +9,29 @@ GuiState::GuiState(ogl::window* winp) {
 	this->win = winp;
 }
 
-void GuiState::convert_rect(vec4& rec) {
+void GuiState::convert_rect(vec4f& rec) {
 	rec.y = win->size.y - rec.y;
 }
 
-bool GuiState::inside(const vec4& rec) {
-	vec2 cur = win->cursor();
+bool GuiState::inside(const vec4f& rec) {
+	vec2f cur = win->cursor();
 	gui_active |= item_howered;
 	return rec.x < cur.x && rec.y < cur.y && rec.x + rec.z > cur.x && rec.y + rec.w > cur.y;
 }
 
-bool GuiState::pushed(const vec4& rec) {
+bool GuiState::pushed(const vec4f& rec) {
 	return inside(rec) && win->rmb();
 }
 
-void GuiState::Icon(vec4 rect, const char* IconId) {
+void GuiState::Icon(vec4f rect, const char* IconId) {
 	GLuint tex = get_tex(IconId);
 	if (tex) {
-		draw_texture(0, tex, vec4(0, 0, win->size.x, win->size.y), rect);
+		win->set_viewport(rect);
+		draw_texture(0, tex);
 	}
 }
 
-bool GuiState::button(vec4 rect, const char* name, const char* IconId) {
+bool GuiState::button(vec4f rect, const char* name, const char* IconId) {
 
 	item_howered = inside(rect);
 	
@@ -55,7 +56,7 @@ bool GuiState::button(vec4 rect, const char* name, const char* IconId) {
 	return pressed;
 }
 
-bool GuiState::pupup(vec4 rect, float safe_padding) {
+bool GuiState::pupup(vec4f rect, float safe_padding) {
 	rect.x -= safe_padding;
 	rect.y -= safe_padding;
 	rect.z += safe_padding * 2;
@@ -64,7 +65,7 @@ bool GuiState::pupup(vec4 rect, float safe_padding) {
 	return item_howered;
 }
 
-void GuiState::FloatSlider(vec4 rect, float& val, float min, float max) {
+void GuiState::FloatSlider(vec4f rect, float& val, float min, float max) {
 
 	item_howered = inside(rect);
 
@@ -78,7 +79,7 @@ void GuiState::FloatSlider(vec4 rect, float& val, float min, float max) {
 	CLAMP(val, min, max);
 	float pos = val / (max - min);
 	float controll_size = rect.z / 14;
-	vec4 controll_rec = vec4(rect.x + pos * (rect.z - controll_size), rect.y + 5, controll_size, rect.w - 10);
+	vec4f controll_rec = vec4f(rect.x + pos * (rect.z - controll_size), rect.y + 5, controll_size, rect.w - 10);
 
 	if (inside(controll_rec)) {
 		controll_rec.x -= 2;
@@ -97,123 +98,13 @@ void GuiState::FloatSlider(vec4 rect, float& val, float min, float max) {
 }
 
 
-typedef struct {
-	double r;       // a fraction between 0 and 1
-	double g;       // a fraction between 0 and 1
-	double b;       // a fraction between 0 and 1
-} rgb;
-typedef struct {
-	double h;       // angle in degrees
-	double s;       // a fraction between 0 and 1
-	double v;       // a fraction between 0 and 1
-} hsv;
-hsv rgb2hsv(rgb in) {
-	hsv         out;
-	double      min, max, delta;
-
-	min = in.r < in.g ? in.r : in.g;
-	min = min < in.b ? min : in.b;
-
-	max = in.r > in.g ? in.r : in.g;
-	max = max > in.b ? max : in.b;
-
-	out.v = max;                                // v
-	delta = max - min;
-	if (delta < 0.00001)
-	{
-		out.s = 0;
-		out.h = 0; // undefined, maybe nan?
-		return out;
-	}
-	if (max > 0.0) { // NOTE: if Max is == 0, this divide would cause a crash
-		out.s = (delta / max);                  // s
-	}
-	else {
-		// if max is 0, then r = g = b = 0              
-		// s = 0, h is undefined
-		out.s = 0.0;
-		out.h = NAN;                            // its now undefined
-		return out;
-	}
-	if (in.r >= max)                           // > is bogus, just keeps compilor happy
-		out.h = (in.g - in.b) / delta;        // between yellow & magenta
-	else
-		if (in.g >= max)
-			out.h = 2.0 + (in.b - in.r) / delta;  // between cyan & yellow
-		else
-			out.h = 4.0 + (in.r - in.g) / delta;  // between magenta & cyan
-
-	out.h *= 60.0;                              // degrees
-
-	if (out.h < 0.0)
-		out.h += 360.0;
-
-	return out;
-}
-rgb hsv2rgb(hsv in) {
-	double      hh, p, q, t, ff;
-	long        i;
-	rgb         out;
-
-	if (in.s <= 0.0) {       // < is bogus, just shuts up warnings
-		out.r = in.v;
-		out.g = in.v;
-		out.b = in.v;
-		return out;
-	}
-	hh = in.h;
-	if (hh >= 360.0) hh = 0.0;
-	hh /= 60.0;
-	i = (long)hh;
-	ff = hh - i;
-	p = in.v * (1.0 - in.s);
-	q = in.v * (1.0 - (in.s * ff));
-	t = in.v * (1.0 - (in.s * (1.0 - ff)));
-
-	switch (i) {
-	case 0:
-		out.r = in.v;
-		out.g = t;
-		out.b = p;
-		break;
-	case 1:
-		out.r = q;
-		out.g = in.v;
-		out.b = p;
-		break;
-	case 2:
-		out.r = p;
-		out.g = in.v;
-		out.b = t;
-		break;
-
-	case 3:
-		out.r = p;
-		out.g = q;
-		out.b = in.v;
-		break;
-	case 4:
-		out.r = t;
-		out.g = p;
-		out.b = in.v;
-		break;
-	case 5:
-	default:
-		out.r = in.v;
-		out.g = p;
-		out.b = q;
-		break;
-	}
-	return out;
-}
-
-void GuiState::DrawCircleFilled(const vec4& rect, const vec4& col) {
+void GuiState::DrawCircleFilled(const vec4f& rect, const rgba& col) {
 
 	glViewport(0, 0, win->size.x, win->size.y);
 	DrawCircleFilled({ rect.x + rect.z / 2, rect.y + rect.w / 2 }, rect.w / 2, col);
 }
 
-void GuiState::DrawCircleFilled(vec2 pos, float rad, const vec4& col) {
+void GuiState::DrawCircleFilled(vec2f pos, float rad, const rgba& col) {
 	
 	static alni precision = 41;
 
@@ -232,8 +123,8 @@ void GuiState::DrawCircleFilled(vec2 pos, float rad, const vec4& col) {
 		float facx = 2 * rad / win->size.x;
 		float facy = 2 * rad / win->size.y;
 
-		float x = (cos(i * twicePi / precision)) * facx / 2;
-		float y = (sin(i * twicePi / precision)) * facy / 2;
+		float x = (trigs::cos(i * twicePi / precision)) * facx / 2;
+		float y = (trigs::sin(i * twicePi / precision)) * facy / 2;
 
 		x = pos.x + x;
 		y = pos.y + y;
@@ -243,7 +134,7 @@ void GuiState::DrawCircleFilled(vec2 pos, float rad, const vec4& col) {
 	glEnd();
 }
 
-void GuiState::ColorPicker(vec4 rect, vec4& col) {
+void GuiState::ColorPicker(vec4f rect, rgba& col) {
 
 	if (inside(rect)) {
 		rect.x -= 3;
@@ -253,17 +144,16 @@ void GuiState::ColorPicker(vec4 rect, vec4& col) {
 	}
 
 	bool active = glfwGetMouseButton(win->winp, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS;
-	vec2 center = vec2((rect.x + rect.z / 2), (rect.y + rect.w / 2));
-	vec2 curs = win->cursor();
-
+	vec2f center = vec2f((rect.x + rect.z / 2), (rect.y + rect.w / 2));
+	vec2f curs = win->cursor();
 
 	float dot_size = 20;
 	float dot_padding = 30;
 	float sv_size = rect.z / 2;
-	vec4 hs_edit_rec = vec4(rect.x + (rect.z - sv_size) / 2, rect.y + (rect.w - sv_size) / 2, sv_size, sv_size);
+	vec4f hs_edit_rec = vec4f(rect.x + (rect.z - sv_size) / 2, rect.y + (rect.w - sv_size) / 2, sv_size, sv_size);
 	
-	hsv hsvin = rgb2hsv({ col.r, col.g, col.b });
-	float angle = hsvin.h / 360 * (2 * PI);
+	hsv hsvin = col.rgbs;
+	float angle = hsvin.h;
 
 	if (active) {
 		if (inside(rect)) {
@@ -275,22 +165,17 @@ void GuiState::ColorPicker(vec4 rect, vec4& col) {
 				CLAMP(hsvin.v, 0, 1);
 			}
 			else {
-				angle = atan2((curs.y - center.y), (curs.x - center.x));
-				angle = angle > 0 ? angle : 2 * PI + angle;
-
-				hsvin.h = (angle / (2 * PI)) * 360;
+				angle = trigs::atan2((curs.y - center.y), (curs.x - center.x));
+				hsvin.h = angle > 0 ? angle : 2 * PI + angle;
 			}
 		}
 	}
 
-	rgb out = hsv2rgb(hsvin);
-	col.r = out.r;
-	col.g = out.g;
-	col.b = out.b;
+	col = hsvin;
 
-	vec2 dot_pos = vec2((rect.z - dot_padding) * cos(angle) / 2, (rect.w - dot_padding) * sin(angle) / 2);
-	vec4 dot_rec = vec4(center.x + dot_pos.x - dot_size / 2, center.y + dot_pos.y - dot_size / 2, dot_size, dot_size);
-	vec4 vs_dot_rec = vec4(hs_edit_rec.x + hs_edit_rec.z * hsvin.s - dot_size / 2, hs_edit_rec.y + hs_edit_rec.w * hsvin.v - dot_size / 2, dot_size, dot_size);
+	vec2f dot_pos = vec2f((rect.z - dot_padding) * trigs::cos(angle) / 2, (rect.w - dot_padding) * trigs::sin(angle) / 2);
+	vec4f dot_rec = vec4f(center.x + dot_pos.x - dot_size / 2, center.y + dot_pos.y - dot_size / 2, dot_size, dot_size);
+	vec4f vs_dot_rec = vec4f(hs_edit_rec.x + hs_edit_rec.z * hsvin.s - dot_size / 2, hs_edit_rec.y + hs_edit_rec.w * hsvin.v - dot_size / 2, dot_size, dot_size);
 	
 	if (inside(rect)) {
 		if (inside(hs_edit_rec)) {
@@ -307,12 +192,12 @@ void GuiState::ColorPicker(vec4 rect, vec4& col) {
 		}
 	}
 
-	DrawCircleFilled(dot_rec, vec4(1));
-	DrawCircleFilled(vs_dot_rec, vec4(1));
+	DrawCircleFilled(dot_rec, rgba(1));
+	DrawCircleFilled(vs_dot_rec, rgba(1));
 
 	glViewport(hs_edit_rec.x, hs_edit_rec.y, hs_edit_rec.z, hs_edit_rec.w);
 
-	rgb hue_preview_col = hsv2rgb({ hsvin.h, 1, 1});
+	rgb hue_preview_col = hsv(hsvin.h, 1, 1);
 	glBegin(GL_QUADS);
 	glColor4f(1, 1, 1, 1); glVertex2f(-1.f, 1.f);
 	glColor4f(0, 0, 0, 1); glVertex2f(-1.f, -1.f);
