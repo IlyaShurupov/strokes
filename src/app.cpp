@@ -26,7 +26,7 @@ time_ms StrokeApp::dur(float fps) {
 	return out;
 }
 
-StrokeApp::StrokeApp(vec2f size) : ogl(), window(size), fbo(size, rgba(0)), gui(&window) {
+StrokeApp::StrokeApp(vec2f size) : ogl(), window(size, ogl::window::FULL_SCREEN), fbo(size, rgba(0)), gui(&window) {
 
 	File db("data.strokes", osfile_openflags::LOAD);
 	load(db);
@@ -65,7 +65,7 @@ void StrokeApp::camera_controller() {
 	}
 
 	if (glfwGetMouseButton(window.geth(), GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {
-		cam.zoom((prevcur.y + 0.5f) / (cur.y + 0.5f));
+		cam.zoom((prevcur.y + 1.f) / (cur.y + 1.f));
 	}
 
 	if (glfwGetKey(window.geth(), GLFW_KEY_SPACE) == GLFW_PRESS) {
@@ -91,6 +91,8 @@ void StrokeApp::proc_inputs() {
 		layer.add_stroke(sampler.get_stroke());
 		sampler.clear();
 	}
+
+	tool_bar_rect = rectf(window.size.x / 2.f - 350 / 2.f, window.size.y - 70, 350, 50);
 }
 
 void StrokeApp::send_output() {
@@ -100,9 +102,11 @@ void StrokeApp::send_output() {
 		window.clear();
 
 		window.reset_viewport();
-		sampler.draw(cam.projmat(), cam.viewmat());
-		layer.draw(cam.projmat(), cam.viewmat());
 
+		mat4f cammat = (cam.projmat() * cam.viewmat()).transpose();
+		sampler.draw(cammat);
+		layer.draw(cammat);
+		
 		draw_ui();
 
 		if (show_debug) {
@@ -115,13 +119,11 @@ void StrokeApp::send_output() {
 void StrokeApp::mainloop() {
 	timer tm_frame_time(whait_for_ev ? dur(idle_device_fps) : dur(max_device_fps));
 
-
 	timer tm;
 
 	timer tm_draw_time;
 	send_output();
 	draw_time = tm_draw_time.past();
-
 
 	int frames_precessed = 0;
 	int target_input_ratio = whait_for_ev ? idle_input_ratio : max_input_ratio;
@@ -142,10 +144,10 @@ void StrokeApp::draw_brush_properties(rectf rect) {
 
 	rectf slider_rec = rectf(rect.x, rect.w + rect.y - slider_size, rect.z, slider_size);
 	if (sampler.eraser) {
-		gui.FloatSlider(slider_rec, sampler.eraser_size, 0.01, 0.3);
+		gui.FloatSlider(slider_rec, sampler.eraser_size, 0.0001f, 0.2f);
 		popup_size.y = slider_size;
 	} else {
-		gui.FloatSlider(slider_rec, sampler.thickness, 0.01, 0.25);
+		gui.FloatSlider(slider_rec, screen_thikness, 0.001f, 0.2f);
 		halnf size = MIN(rect.z, rect.w - (slider_size + 10));
 		gui.ColorPicker(rectf(rect.x + (rect.z - size) / 2, rect.y, size, size), sampler.stroke_col);
 
@@ -223,7 +225,13 @@ void StrokeApp::draw_toolbar(rectf rect) {
 void StrokeApp::draw_ui() {
 	draw_toolbar(tool_bar_rect);
 
-	halnf cur_scale = (sampler.eraser ? sampler.eraser_size : sampler.thickness) * window.size.x;
+	if (!sampler.eraser) {
+		vec3f zero_projection = cam.project(vec2f(0.f));
+		sampler.thickness = (cam.project(vec2f(0.f, screen_thikness)) - zero_projection).length();
+		sampler.precision = (cam.project(vec2f(0.f, screen_precision)) - zero_projection).length();
+	}
+
+	halnf cur_scale = (sampler.eraser ? sampler.eraser_size : screen_thikness) * window.size.x;
 	rectf cur_rect = rectf(window.cursor().x - cur_scale / 2, window.cursor().y - cur_scale / 2, cur_scale, cur_scale);
 
 	window.set_viewport(cur_rect);
@@ -251,7 +259,7 @@ void StrokeApp::render_debug_ui() {
 	ImGui::ColorEdit4("Background Color", &window.col_clear.r, flg);
 	ImGui::ColorEdit4("Stroke Color", &sampler.stroke_col.rgbs.r, flg);
 	ImGui::SliderFloat("Stroke Thikness", &sampler.thickness, 0.009, 0.1);
-	ImGui::SliderFloat("Sampler Precision", &sampler.precision, 0.01, 0.1);
+	ImGui::SliderFloat("Sampler Precision", &screen_precision, 0.001f, 0.2f);
 
 
 	ImGui::Separator();

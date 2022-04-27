@@ -26,7 +26,7 @@ struct stroke_mesh {
 	void operator=(const stroke_mesh& in);
 
 	void bind_buffers();
-	void draw_mesh(const mat4f& proj_mat, const mat4f& view_mat);
+	void draw_mesh(const mat4f& cammat);
 	~stroke_mesh();
 };
 
@@ -50,7 +50,7 @@ struct stroke {
 	
 	void gen_mesh();
 
-	void drawcall(const mat4f& proj_mat, const mat4f& view_mat);
+	void drawcall(const mat4f& cammat);
 	void add_point(const stroke_point& p);
 
 };
@@ -65,7 +65,7 @@ public:
 	void redo();
 
 	void add_stroke(const stroke& str);
-	void draw(const mat4f& proj_mat, const mat4f& view_mat);
+	void draw(const mat4f& cammat);
 };
 
 class inputsmpler {
@@ -79,9 +79,9 @@ public:
 	stroke input;
 	float pressure;
 
-	float precision = 0.02;
+	halnf precision = 0.02;
 	float thickness = 0.04;
-	rgba stroke_col = rgba(0, 0, 1, 1);
+	rgba stroke_col = rgba(0.77, 0.77, 0.77, 1);
 
 	bool eraser = false;
 	float eraser_size = 0.1f;
@@ -93,12 +93,10 @@ public:
 	void erase_util(list<stroke>* pull, list<stroke>* undo, const vec2f& cpos, camera* cam);
 	void finish(const vec2f& cpos, camera* cam);
 
-
-
 	// cpos - normilized coordinates from center
 	void sample(list<stroke>* pull, list<stroke>* undo, vec2f curs, float pressure, camera* cam);
 	// screen space
-	void draw(const mat4f& proj_mat, const mat4f& view_mat);
+	void draw(const mat4f& cammat);
 
 	bool active_state();
 	bool has_input();

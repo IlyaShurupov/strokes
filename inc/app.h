@@ -22,6 +22,9 @@ class StrokeApp {
 	drawlayer layer;
 	inputsmpler sampler;
 
+	halnf screen_thikness = 0.02f;
+	halnf screen_precision = 0.002f;
+
 	bool quit = false;
 	bool show_debug = false;
 	bool can_draw = true;
@@ -33,10 +36,10 @@ class StrokeApp {
 	int max_input_ratio = 200.f;
 	int idle_input_ratio = 2.f;
 	int max_device_fps = 100.f;
-	int idle_device_fps = 40.f;
+	int idle_device_fps = 45.f;
 	bool whait_for_ev = false;
 
-	rectf tool_bar_rect = rectf(window.size.x / 2.f - 350 / 2.f, window.size.y - 70, 350, 50);
+	rectf tool_bar_rect;
 	vec2f popup_size = vec2f(200, 250);
 	bool tollbar_popup = false;
 

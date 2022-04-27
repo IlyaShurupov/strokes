@@ -42,12 +42,12 @@ void stroke_mesh::bind_buffers() {
 }
 
 
-void stroke_mesh::draw_mesh(const mat4f& proj_mat, const mat4f& view_mat) {
+void stroke_mesh::draw_mesh(const mat4f& cammat) {
 
 	glBindVertexArray(VertexArrayID);
 
 	shader->bind();
-	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(proj_mat * view_mat)[0][0]);
+	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &cammat[0][0]);
 	glUniform4fv(ColorID, 1, &color.rgbs.r);
 
 	// 1st attribute buffer : vertices
@@ -166,8 +166,8 @@ void stroke::gen_mesh() {
 	mesh.bind_buffers();
 }
 
-void stroke::drawcall(const mat4f& proj_mat, const mat4f& view_mat) {
-	mesh.draw_mesh(proj_mat, view_mat);
+void stroke::drawcall(const mat4f& cammat) {
+	mesh.draw_mesh(cammat);
 }
 
 void stroke::add_point(const stroke_point& p) {
@@ -191,12 +191,12 @@ void drawlayer::redo() {
 
 void drawlayer::add_stroke(const stroke& str) {
 	strokes.PushBack(str);
-	// strokes.Last()->data.gen_mesh();
+	 strokes.Last()->data.gen_mesh();
 }
 
-void drawlayer::draw(const mat4f& proj_mat, const mat4f& view_mat) {
+void drawlayer::draw(const mat4f& cammat) {
 	for (list_node<stroke>* str = strokes.Last(); str; str = str->prev) {
-		str->data.drawcall(proj_mat, view_mat);
+		str->data.drawcall(cammat);
 	}
 }
 
@@ -218,7 +218,7 @@ bool inputsmpler::passed(const vec3f& point) {
 void inputsmpler::start(const vec2f& cpos, camera* cam) {
 	input.points.Free();
 	vec3f point = cam->project(cpos);
-	add_point(point, cam->get_fw(), 0.01);
+	add_point(point, cam->get_fw(), 0.0001f);
 }
 
 void inputsmpler::sample_util(const vec2f& cpos, camera* cam) {
@@ -235,8 +235,7 @@ void inputsmpler::erase_util(list<stroke>* pull, list<stroke>* undo, const vec2f
 		bool remove = false;
 
 		for (auto pnt : str->data.points) {
-			vec2f screen_pos = cam->project(pnt.data().pos);
-			if ((screen_pos - cpos).length() < eraser_size) {
+			if ((cam->project(pnt.data().pos) - cpos).length() < eraser_size) {
 				remove = true;
 				break;
 			}
@@ -259,7 +258,8 @@ void inputsmpler::finish(const vec2f& cpos, camera* cam) {
 		input.points.Free();
 	}
 	else {
-		input.points[input.points.length - 1].thikness = 0.01;
+		input.points[input.points.length - 1].thikness = 0.001;
+		cam->offset_target(0.0001);
 	}
 }
 
@@ -278,32 +278,32 @@ void inputsmpler::sample(list<stroke>* pull, list<stroke>* undo, vec2f curs, flo
 
 	switch (state) {
 	case pstate::NONE: {
-		if (pressure > 0) {
+		if (pressure) {
 			start(curs, cam);
 			state = pstate::ACTIVE;
 		}
 		return;
 	}
 	case pstate::ACTIVE: {
-		if (!pressure > 0) {
+		sample_util(curs, cam);
+		if (!pressure) {
 			finish(curs, cam);
 			state = pstate::NONE;
 			return;
 		}
-		sample_util(curs, cam);
 		return;
 	}
 	}
 }
 
-void inputsmpler::draw(const mat4f& proj_mat, const mat4f& view_mat) {
+void inputsmpler::draw(const mat4f& cammat) {
 
 	static int prev_len = input.points.length;
 	if (input.points.length > 1) {
 		if (prev_len < input.points.length) {
 			input.gen_mesh();
 		}
-		input.drawcall(proj_mat, view_mat);
+		input.drawcall(cammat);
 	}
 	prev_len = input.points.length;
 }

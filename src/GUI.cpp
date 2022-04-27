@@ -117,7 +117,7 @@ void GuiState::DrawCircleFilled(vec2f pos, float rad, const rgba& col) {
 	pos.x = ((pos.x / win->size.x) - 0.5) * 2;
 	pos.y = ((pos.y / win->size.y) - 0.5) * 2;
 
-	glVertex2f(pos.x, pos.y);
+	glVertex3f(pos.x, pos.y, -0.99);
 
 	for (alni i = 0; i <= precision; i++) {
 		float facx = 2 * rad / win->size.x;
@@ -129,7 +129,7 @@ void GuiState::DrawCircleFilled(vec2f pos, float rad, const rgba& col) {
 		x = pos.x + x;
 		y = pos.y + y;
 
-		glVertex2f(x, y);
+		glVertex3f(x, y, -0.99);
 	}
 	glEnd();
 }
@@ -199,10 +199,10 @@ void GuiState::ColorPicker(rectf rect, rgba& col) {
 
 	rgb hue_preview_col = hsv(hsvin.h, 1, 1);
 	glBegin(GL_QUADS);
-	glColor4f(1, 1, 1, 1); glVertex2f(-1.f, 1.f);
-	glColor4f(0, 0, 0, 1); glVertex2f(-1.f, -1.f);
-	glColor4f(0, 0, 0, 1); glVertex2f(1.f, -1.f); 
-	glColor4f(hue_preview_col.r, hue_preview_col.g, hue_preview_col.b, 1); glVertex2f(1.f, 1.f);
+	glColor4f(1, 1, 1, 1); glVertex3f(-1.f, 1.f, -0.99);
+	glColor4f(0, 0, 0, 1); glVertex3f(-1.f, -1.f, -0.99);
+	glColor4f(0, 0, 0, 1); glVertex3f(1.f, -1.f, -0.99);
+	glColor4f(hue_preview_col.r, hue_preview_col.g, hue_preview_col.b, 1); glVertex3f(1.f, 1.f, -0.99);
 	glEnd();
 
 	Icon(rect, "../rsc/icons/ColorPickerRGB.png");
