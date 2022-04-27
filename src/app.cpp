@@ -26,7 +26,7 @@ time_ms StrokeApp::dur(float fps) {
 	return out;
 }
 
-StrokeApp::StrokeApp(vec2f size) : ogl(), window(size), fbo(size, vec4f(0)), gui(&window) {
+StrokeApp::StrokeApp(vec2f size) : ogl(), window(size), fbo(size, rgba(0)), gui(&window) {
 
 	File db("data.strokes", osfile_openflags::LOAD);
 	load(db);
@@ -72,6 +72,7 @@ void StrokeApp::camera_controller() {
 		cam.move(cur, prevcur);
 	}
 
+	cam.set_ratio(window.aspect_ratio());
 	prevcur = cur;
 }
 
@@ -135,18 +136,18 @@ void StrokeApp::mainloop() {
 	tm_frame_time.wait_out();
 }
 
-void StrokeApp::draw_brush_properties(vec4f rect) {
+void StrokeApp::draw_brush_properties(rectf rect) {
 	float slider_size = 40;
 	float picker_size = 180;
 
-	vec4f slider_rec = vec4f(rect.x, rect.w + rect.y - slider_size, rect.z, slider_size);
+	rectf slider_rec = rectf(rect.x, rect.w + rect.y - slider_size, rect.z, slider_size);
 	if (sampler.eraser) {
 		gui.FloatSlider(slider_rec, sampler.eraser_size, 0.01, 0.3);
 		popup_size.y = slider_size;
 	} else {
 		gui.FloatSlider(slider_rec, sampler.thickness, 0.01, 0.25);
 		halnf size = MIN(rect.z, rect.w - (slider_size + 10));
-		gui.ColorPicker(vec4f(rect.x + (rect.z - size) / 2, rect.y, size, size), sampler.stroke_col);
+		gui.ColorPicker(rectf(rect.x + (rect.z - size) / 2, rect.y, size, size), sampler.stroke_col);
 
 		popup_size.y = picker_size + slider_size + 10;
 	}
@@ -154,16 +155,16 @@ void StrokeApp::draw_brush_properties(vec4f rect) {
 	popup_size.x = picker_size;
 }
 
-void StrokeApp::draw_toolbar(vec4f rect) {
+void StrokeApp::draw_toolbar(rectf rect) {
 
-	vec4f(*get_rect)(vec4f & in) = [](vec4f& in) {
+	rectf(*get_rect)(rectf & in) = [](rectf& in) {
 		static int idx = 0;
 		float butns = 6;
 		float item_size = in.z / butns;
 		float padding = item_size / 10;
 		item_size = item_size - padding;
 
-		vec4f out = vec4f(in.x + idx * (item_size + padding * 2), in.y, item_size, in.w);
+		rectf out = rectf(in.x + idx * (item_size + padding * 2), in.y, item_size, in.w);
 
 		if (idx == 5) {
 			idx = 0;
@@ -182,7 +183,7 @@ void StrokeApp::draw_toolbar(vec4f rect) {
 	}
 
 	{
-		vec4f butrec = get_rect(rect);
+		rectf butrec = get_rect(rect);
 		if (gui.button(butrec, NULL, sampler.eraser ? "../rsc/icons/Eraser.png" : "../rsc/icons/Pen.png")) {
 			sampler.eraser = !sampler.eraser;
 		}
@@ -193,7 +194,7 @@ void StrokeApp::draw_toolbar(vec4f rect) {
 		}
 
 		if (tollbar_popup) {
-			vec4f poup_rec = vec4f(butrec.x + butrec.z / 2 - popup_size.x / 2, butrec.y - 25 - popup_size.y, popup_size.x, popup_size.y);
+			rectf poup_rec = rectf(butrec.x + butrec.z / 2 - popup_size.x / 2, butrec.y - 25 - popup_size.y, popup_size.x, popup_size.y);
 
 			bool should_close = !gui.pupup(poup_rec, 40);
 
@@ -223,7 +224,7 @@ void StrokeApp::draw_ui() {
 	draw_toolbar(tool_bar_rect);
 
 	halnf cur_scale = (sampler.eraser ? sampler.eraser_size : sampler.thickness) * window.size.x;
-	vec4f cur_rect = vec4f(window.cursor().x - cur_scale / 2, window.cursor().y - cur_scale / 2, cur_scale, cur_scale);
+	rectf cur_rect = rectf(window.cursor().x - cur_scale / 2, window.cursor().y - cur_scale / 2, cur_scale, cur_scale);
 
 	window.set_viewport(cur_rect);
 	draw_texture(0, get_tex("../rsc/icons/EraserCursor.png"));
@@ -247,7 +248,7 @@ void StrokeApp::render_debug_ui() {
 
 	ImGui::Text("\n\nInspired by kuko Developed by dudka <3\n\n");
 
-	ImGui::ColorEdit4("Background Color", &window.col_clear.x, flg);
+	ImGui::ColorEdit4("Background Color", &window.col_clear.r, flg);
 	ImGui::ColorEdit4("Stroke Color", &sampler.stroke_col.rgbs.r, flg);
 	ImGui::SliderFloat("Stroke Thikness", &sampler.thickness, 0.009, 0.1);
 	ImGui::SliderFloat("Sampler Precision", &sampler.precision, 0.01, 0.1);

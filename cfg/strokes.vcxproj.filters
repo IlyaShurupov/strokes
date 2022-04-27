@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\src\app.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\entry.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gui.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\strokes.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\inc\gui.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\app.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\strokes.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\rsc\shaders\stroke.vert">
+      <Filter>rcs</Filter>
+    </None>
+    <None Include="..\rsc\shaders\stroke.frag">
+      <Filter>rcs</Filter>
+    </None>
+    <None Include="..\rsc\shaders\Texture.frag">
+      <Filter>rcs</Filter>
+    </None>
+    <None Include="..\rsc\shaders\Texture.vert">
+      <Filter>rcs</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="inc">
+      <UniqueIdentifier>{6e0cc477-e80e-4a2e-aad5-15ea56b37ed1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rcs">
+      <UniqueIdentifier>{e324e0aa-967a-44c2-8d00-6c7d5699badd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{6a3932c0-2989-4e51-9bbf-b13010e22ffa}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

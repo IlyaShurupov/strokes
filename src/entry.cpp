@@ -3,7 +3,7 @@
 
 int main() {
 
-	StrokeApp app(vec2f(1920, 1080));
+	StrokeApp app(vec2f(600, 600));
 
 	fpscount fc;
 

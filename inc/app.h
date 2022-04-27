@@ -36,7 +36,7 @@ class StrokeApp {
 	int idle_device_fps = 40.f;
 	bool whait_for_ev = false;
 
-	vec4f tool_bar_rect = vec4f(740, 980, 350, 50);
+	rectf tool_bar_rect = rectf(window.size.x / 2.f - 350 / 2.f, window.size.y - 70, 350, 50);
 	vec2f popup_size = vec2f(200, 250);
 	bool tollbar_popup = false;
 
@@ -58,8 +58,8 @@ class StrokeApp {
 	void camera_controller();
 	void proc_inputs();
 	void send_output();
-	void draw_brush_properties(vec4f rect);
-	void draw_toolbar(vec4f rect);
+	void draw_brush_properties(rectf rect);
+	void draw_toolbar(rectf rect);
 	void draw_ui();
 	void render_debug_ui();
 };

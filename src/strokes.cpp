@@ -218,13 +218,13 @@ bool inputsmpler::passed(const vec3f& point) {
 void inputsmpler::start(const vec2f& cpos, camera* cam) {
 	input.points.Free();
 	vec3f point = cam->project(cpos);
-	add_point(point, cam->tmat.K, 0.01);
+	add_point(point, cam->get_fw(), 0.01);
 }
 
 void inputsmpler::sample_util(const vec2f& cpos, camera* cam) {
 	vec3f point = cam->project(cpos);
 	if (passed(point)) {
-		add_point(point, cam->tmat.K, thickness);
+		add_point(point, cam->get_fw(), thickness);
 	}
 }
 

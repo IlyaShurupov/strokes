@@ -8,6 +8,7 @@ uniform mat4 MVP;
 uniform vec4 StrokeColor; 
 
 void main() {
-	gl_Position = MVP * vec4(str_vert, 1);
+	vec4 loc = transpose(MVP) * vec4(str_vert, 1);
+	gl_Position = loc;
 	fragmentColor = StrokeColor;
 }

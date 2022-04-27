@@ -9,21 +9,21 @@ GuiState::GuiState(ogl::window* winp) {
 	this->win = winp;
 }
 
-void GuiState::convert_rect(vec4f& rec) {
+void GuiState::convert_rect(rectf& rec) {
 	rec.y = win->size.y - rec.y;
 }
 
-bool GuiState::inside(const vec4f& rec) {
+bool GuiState::inside(const rectf& rec) {
 	vec2f cur = win->cursor();
 	gui_active |= item_howered;
 	return rec.x < cur.x && rec.y < cur.y && rec.x + rec.z > cur.x && rec.y + rec.w > cur.y;
 }
 
-bool GuiState::pushed(const vec4f& rec) {
+bool GuiState::pushed(const rectf& rec) {
 	return inside(rec) && win->rmb();
 }
 
-void GuiState::Icon(vec4f rect, const char* IconId) {
+void GuiState::Icon(rectf rect, const char* IconId) {
 	GLuint tex = get_tex(IconId);
 	if (tex) {
 		win->set_viewport(rect);
@@ -31,7 +31,7 @@ void GuiState::Icon(vec4f rect, const char* IconId) {
 	}
 }
 
-bool GuiState::button(vec4f rect, const char* name, const char* IconId) {
+bool GuiState::button(rectf rect, const char* name, const char* IconId) {
 
 	item_howered = inside(rect);
 	
@@ -56,7 +56,7 @@ bool GuiState::button(vec4f rect, const char* name, const char* IconId) {
 	return pressed;
 }
 
-bool GuiState::pupup(vec4f rect, float safe_padding) {
+bool GuiState::pupup(rectf rect, float safe_padding) {
 	rect.x -= safe_padding;
 	rect.y -= safe_padding;
 	rect.z += safe_padding * 2;
@@ -65,7 +65,7 @@ bool GuiState::pupup(vec4f rect, float safe_padding) {
 	return item_howered;
 }
 
-void GuiState::FloatSlider(vec4f rect, float& val, float min, float max) {
+void GuiState::FloatSlider(rectf rect, float& val, float min, float max) {
 
 	item_howered = inside(rect);
 
@@ -79,7 +79,7 @@ void GuiState::FloatSlider(vec4f rect, float& val, float min, float max) {
 	CLAMP(val, min, max);
 	float pos = val / (max - min);
 	float controll_size = rect.z / 14;
-	vec4f controll_rec = vec4f(rect.x + pos * (rect.z - controll_size), rect.y + 5, controll_size, rect.w - 10);
+	rectf controll_rec = rectf(rect.x + pos * (rect.z - controll_size), rect.y + 5, controll_size, rect.w - 10);
 
 	if (inside(controll_rec)) {
 		controll_rec.x -= 2;
@@ -98,7 +98,7 @@ void GuiState::FloatSlider(vec4f rect, float& val, float min, float max) {
 }
 
 
-void GuiState::DrawCircleFilled(const vec4f& rect, const rgba& col) {
+void GuiState::DrawCircleFilled(const rectf& rect, const rgba& col) {
 
 	glViewport(0, 0, win->size.x, win->size.y);
 	DrawCircleFilled({ rect.x + rect.z / 2, rect.y + rect.w / 2 }, rect.w / 2, col);
@@ -134,7 +134,7 @@ void GuiState::DrawCircleFilled(vec2f pos, float rad, const rgba& col) {
 	glEnd();
 }
 
-void GuiState::ColorPicker(vec4f rect, rgba& col) {
+void GuiState::ColorPicker(rectf rect, rgba& col) {
 
 	if (inside(rect)) {
 		rect.x -= 3;
@@ -150,7 +150,7 @@ void GuiState::ColorPicker(vec4f rect, rgba& col) {
 	float dot_size = 20;
 	float dot_padding = 30;
 	float sv_size = rect.z / 2;
-	vec4f hs_edit_rec = vec4f(rect.x + (rect.z - sv_size) / 2, rect.y + (rect.w - sv_size) / 2, sv_size, sv_size);
+	rectf hs_edit_rec = rectf(rect.x + (rect.z - sv_size) / 2, rect.y + (rect.w - sv_size) / 2, sv_size, sv_size);
 	
 	hsv hsvin = col.rgbs;
 	float angle = hsvin.h;
@@ -174,8 +174,8 @@ void GuiState::ColorPicker(vec4f rect, rgba& col) {
 	col = hsvin;
 
 	vec2f dot_pos = vec2f((rect.z - dot_padding) * trigs::cos(angle) / 2, (rect.w - dot_padding) * trigs::sin(angle) / 2);
-	vec4f dot_rec = vec4f(center.x + dot_pos.x - dot_size / 2, center.y + dot_pos.y - dot_size / 2, dot_size, dot_size);
-	vec4f vs_dot_rec = vec4f(hs_edit_rec.x + hs_edit_rec.z * hsvin.s - dot_size / 2, hs_edit_rec.y + hs_edit_rec.w * hsvin.v - dot_size / 2, dot_size, dot_size);
+	rectf dot_rec = rectf(center.x + dot_pos.x - dot_size / 2, center.y + dot_pos.y - dot_size / 2, dot_size, dot_size);
+	rectf vs_dot_rec = rectf(hs_edit_rec.x + hs_edit_rec.z * hsvin.s - dot_size / 2, hs_edit_rec.y + hs_edit_rec.w * hsvin.v - dot_size / 2, dot_size, dot_size);
 	
 	if (inside(rect)) {
 		if (inside(hs_edit_rec)) {
