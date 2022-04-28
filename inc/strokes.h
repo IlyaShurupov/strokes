@@ -71,20 +71,20 @@ public:
 class inputsmpler {
 public:
 
-	enum class pstate {
-		NONE,
-		ACTIVE,
-	} state = pstate::NONE;
+	bool is_active = false;
 
 	stroke input;
-	float pressure;
+	halnf pressure;
 
-	halnf precision = 0.02;
-	float thickness = 0.04;
 	rgba stroke_col = rgba(0.77, 0.77, 0.77, 1);
 
+	halnf screen_precision = 0.002f;
+	halnf precision = 0.02;
+	halnf screen_thikness = 0.02f;
+	halnf thickness = 0.04;
+
 	bool eraser = false;
-	float eraser_size = 0.1f;
+	halnf eraser_size = 0.1f;
 
 	void add_point(const vec3f& pos, const vec3f& norm, float thickness);
 	bool passed(const vec3f& point);
@@ -93,9 +93,7 @@ public:
 	void erase_util(list<stroke>* pull, list<stroke>* undo, const vec2f& cpos, camera* cam);
 	void finish(const vec2f& cpos, camera* cam);
 
-	// cpos - normilized coordinates from center
 	void sample(list<stroke>* pull, list<stroke>* undo, vec2f curs, float pressure, camera* cam);
-	// screen space
 	void draw(const mat4f& cammat);
 
 	bool active_state();

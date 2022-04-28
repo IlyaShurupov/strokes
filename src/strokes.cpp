@@ -274,21 +274,25 @@ void inputsmpler::sample(list<stroke>* pull, list<stroke>* undo, vec2f curs, flo
 			erase_util(pull, undo, curs, cam);
 		}
 		return;
+	} else {
+		vec3f zero_projection = cam->project(vec2f(0.f));
+		thickness = (cam->project(vec2f(0.f, screen_thikness)) - zero_projection).length();
+		precision = (cam->project(vec2f(0.f, screen_precision)) - zero_projection).length();
 	}
 
-	switch (state) {
-	case pstate::NONE: {
+	switch (is_active) {
+	case false: {
 		if (pressure) {
 			start(curs, cam);
-			state = pstate::ACTIVE;
+			is_active = true;
 		}
 		return;
 	}
-	case pstate::ACTIVE: {
+	case true: {
 		sample_util(curs, cam);
 		if (!pressure) {
 			finish(curs, cam);
-			state = pstate::NONE;
+			is_active = false;
 			return;
 		}
 		return;
@@ -309,14 +313,14 @@ void inputsmpler::draw(const mat4f& cammat) {
 }
 
 bool inputsmpler::active_state() {
-	return state == pstate::ACTIVE;
+	return is_active;
 }
 bool inputsmpler::has_input() {
 	return input.points.length > 1;
 }
 void inputsmpler::clear() {
 	input.points.Free();
-	state = pstate::NONE;
+	is_active = false;
 }
 const stroke& inputsmpler::get_stroke() {
 	return input;

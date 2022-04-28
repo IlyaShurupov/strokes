@@ -18,45 +18,26 @@ class StrokeApp {
 	ogl::fbuffer fbo;
 
 	GuiState gui;
-	camera cam;
-	drawlayer layer;
-	inputsmpler sampler;
-
-	halnf screen_thikness = 0.02f;
-	halnf screen_precision = 0.002f;
-
-	bool quit = false;
-	bool show_debug = false;
-	bool can_draw = true;
-
-	float frame_time;
-	float draw_time;
-	float input_vs_output;
-
-	int max_input_ratio = 200.f;
-	int idle_input_ratio = 2.f;
-	int max_device_fps = 100.f;
-	int idle_device_fps = 45.f;
-	bool whait_for_ev = false;
-
+	bool gui_is_active = true;
 	rectf tool_bar_rect;
 	vec2f popup_size = vec2f(200, 250);
 	bool tollbar_popup = false;
 
+	// application specific
+	camera cam;
+	drawlayer layer;
+	inputsmpler sampler;
+
 	public:
 
-	int fps;
-
-	StrokeApp(vec2f size);
-	void mainloop();
-	bool IsRunnign();
-	void save(File& file);
-	void load(File& file);
+	StrokeApp(vec2f size = vec2f(1400, 1000));
+	alni run();
 	~StrokeApp();
 
 	private:
-
-	time_ms dur(float fps);
+	
+	void save(File& file);
+	void load(File& file);
 
 	void camera_controller();
 	void proc_inputs();
@@ -64,5 +45,4 @@ class StrokeApp {
 	void draw_brush_properties(rectf rect);
 	void draw_toolbar(rectf rect);
 	void draw_ui();
-	void render_debug_ui();
 };
