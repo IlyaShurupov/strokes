@@ -61,6 +61,7 @@ public:
 	list<stroke> strokes;
 	list<stroke> strokes_undo;
 
+	rgba canvas_color = rgba(0.22f, 0.22f, 0.23f, 1.f);
 	void undo();
 	void redo();
 
@@ -78,8 +79,8 @@ public:
 
 	rgba stroke_col = rgba(0.77, 0.77, 0.77, 1);
 
-	halnf screen_precision = 0.002f;
-	halnf precision = 0.02;
+	halnf screen_precision = 0.009f;
+	halnf precision = 0.004;
 	halnf screen_thikness = 0.02f;
 	halnf thickness = 0.04;
 

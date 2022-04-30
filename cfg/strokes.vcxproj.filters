@@ -7,7 +7,7 @@
     <ClCompile Include="..\src\entry.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\gui.cpp">
+    <ClCompile Include="..\src\app_gui.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\src\strokes.cpp">
@@ -15,28 +15,31 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\inc\gui.h">
-      <Filter>inc</Filter>
-    </ClInclude>
     <ClInclude Include="..\inc\app.h">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="..\inc\strokes.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>rcs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\rsc\shaders\stroke.vert">
-      <Filter>rcs</Filter>
-    </None>
-    <None Include="..\rsc\shaders\stroke.frag">
-      <Filter>rcs</Filter>
-    </None>
     <None Include="..\rsc\shaders\Texture.frag">
-      <Filter>rcs</Filter>
+      <Filter>glsl</Filter>
     </None>
     <None Include="..\rsc\shaders\Texture.vert">
-      <Filter>rcs</Filter>
+      <Filter>glsl</Filter>
+    </None>
+    <None Include="..\rsc\shaders\stroke.frag">
+      <Filter>glsl</Filter>
+    </None>
+    <None Include="..\rsc\shaders\stroke.vert">
+      <Filter>glsl</Filter>
+    </None>
+    <None Include="install.py">
+      <Filter>build</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -49,5 +52,21 @@
     <Filter Include="src">
       <UniqueIdentifier>{6a3932c0-2989-4e51-9bbf-b13010e22ffa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="glsl">
+      <UniqueIdentifier>{758315f2-9247-4e38-a3d6-ec1c52a03b56}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="build">
+      <UniqueIdentifier>{487a1bf6-c6f4-433c-9805-1aa634362903}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\rsc\icons\icon.ico">
+      <Filter>rcs</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="strokes.rc">
+      <Filter>rcs</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

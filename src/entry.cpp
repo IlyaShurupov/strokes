@@ -3,7 +3,8 @@
 
 int main() {
 	StrokeApp app;
-	return app.run();
+	app.Run();
+	return 0;
 }
 
 int WinMain() {

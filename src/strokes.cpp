@@ -4,7 +4,7 @@
 #include "glutils.h"
 
 void stroke_mesh::init() {
-	static ogl::shader shader("stroke", NULL, "stroke");
+	static ogl::shader shader("rsc/shaders/stroke", NULL, "rsc/shaders/stroke");
 	this->shader = &shader;
 
 	MatrixID = shader.getu("MVP");

@@ -28,12 +28,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\inc\app.h" />
-    <ClInclude Include="..\inc\gui.h" />
     <ClInclude Include="..\inc\strokes.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\entry.cpp" />
-    <ClCompile Include="..\src\gui.cpp" />
+    <ClCompile Include="..\src\app_gui.cpp" />
     <ClCompile Include="..\src\app.cpp" />
     <ClCompile Include="..\src\strokes.cpp" />
   </ItemGroup>
@@ -42,6 +42,7 @@
     <None Include="..\rsc\shaders\stroke.vert" />
     <None Include="..\rsc\shaders\Texture.frag" />
     <None Include="..\rsc\shaders\Texture.vert" />
+    <None Include="install.py" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\glew\build\vc12\glew_static.vcxproj">
@@ -50,7 +51,7 @@
     <ProjectReference Include="..\..\glfw\config\src\glfw.vcxproj">
       <Project>{8fb23769-990f-3014-9d36-cd40b93cf151}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\imgui-vs\amgui\amgui.vcxproj">
+    <ProjectReference Include="..\..\imgw\cfg\imgw.vcxproj">
       <Project>{6e225d12-1c66-4a38-bee5-71c4dbec0521}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\lunasvg\config\lunasvg_static.vcxproj">
@@ -80,6 +81,12 @@
     <ProjectReference Include="..\..\types\modules\string\cfg\string.vcxproj">
       <Project>{3dec959d-9484-4bb6-819c-2a8074ea3600}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="strokes.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\rsc\icons\icon.ico" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -156,35 +163,35 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(ProjectDir)..\tests\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)..\tests\bin\.tmp\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(ProjectDir)..\bin\$(ProjectName)_$(Platform)_$(Configuration)</OutDir>
+    <IntDir>$(ProjectDir)..\bin\.tmp\$(ProjectName)_$(Platform)_$(Configuration)</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(ProjectDir)..\tests\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)..\tests\bin\.tmp\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(ProjectDir)..\bin\$(ProjectName)_$(Platform)_$(Configuration)</OutDir>
+    <IntDir>$(ProjectDir)..\bin\.tmp\$(ProjectName)_$(Platform)_$(Configuration)</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-expl|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(ProjectDir)..\tests\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)..\tests\bin\.tmp\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(ProjectDir)..\bin\$(ProjectName)_$(Platform)_$(Configuration)</OutDir>
+    <IntDir>$(ProjectDir)..\bin\.tmp\$(ProjectName)_$(Platform)_$(Configuration)</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(ProjectDir)..\tests\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)..\tests\bin\.tmp\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(ProjectDir)..\bin\$(ProjectName)_$(Platform)_$(Configuration)</OutDir>
+    <IntDir>$(ProjectDir)..\bin\.tmp\$(ProjectName)_$(Platform)_$(Configuration)</IntDir>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(ProjectDir)..\tests\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)..\tests\bin\.tmp\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(ProjectDir)..\bin\$(ProjectName)_$(Platform)_$(Configuration)</OutDir>
+    <IntDir>$(ProjectDir)..\bin\.tmp\$(ProjectName)_$(Platform)_$(Configuration)</IntDir>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-expl|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(ProjectDir)..\tests\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)..\tests\bin\.tmp\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(ProjectDir)..\bin\$(ProjectName)_$(Platform)_$(Configuration)</OutDir>
+    <IntDir>$(ProjectDir)..\bin\.tmp\$(ProjectName)_$(Platform)_$(Configuration)</IntDir>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -193,15 +200,19 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\imgui\;$(ProjectDir)..\..\imgui\backends;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\implot\;$(ProjectDir)..\..\imgui-vs\amgui;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;$(ProjectDir)..\..\imgw\inc;$(ProjectDir)..\..\imgw\ext\imgui\;$(ProjectDir)..\..\imgw\ext\imgu-notify\;$(ProjectDir)..\..\imgw\ext\implot\;$(ProjectDir)..\..\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glw.lib;imgui.lib;lunasvg.lib;soil.lib;filesystem.lib;glew32sd.lib;string.lib;container.lib;opengl32.lib;glfw3.lib;allocator.lib;common.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\glw\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\allocator\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\string\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\container\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\common\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\imgui-vs\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glew\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glfw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\types\modules\filesystem\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\soil\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\lunasvg\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glw.lib;imgw.lib;lunasvg.lib;soil.lib;filesystem.lib;glew32sd.lib;string.lib;container.lib;opengl32.lib;glfw3.lib;allocator.lib;common.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\glw\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\allocator\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\string\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\container\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\common\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\imgw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glew\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glfw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\types\modules\filesystem\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\soil\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\lunasvg\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>python $(ProjectDir)install.py $(ProjectDir) $(OutDirFullPath)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -211,7 +222,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\imgui\;$(ProjectDir)..\..\imgui\backends;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\implot\;$(ProjectDir)..\..\imgui-vs\amgui;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;$(ProjectDir)..\..\imgw\inc;$(ProjectDir)..\..\imgw\ext\imgui\;$(ProjectDir)..\..\imgw\ext\imgu-notify\;$(ProjectDir)..\..\imgw\ext\implot\;$(ProjectDir)..\..\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -219,9 +230,13 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glw.lib;imgui.lib;filesystem.lib;lunasvg.lib;soil.lib;glew32s.lib;string.lib;container.lib;opengl32.lib;glfw3.lib;allocator.lib;common.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\glw\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\allocator\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\string\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\container\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\common\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\imgui-vs\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glew\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glfw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\types\modules\filesystem\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\soil\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\lunasvg\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glw.lib;imgw.lib;filesystem.lib;lunasvg.lib;soil.lib;glew32s.lib;string.lib;container.lib;opengl32.lib;glfw3.lib;allocator.lib;common.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\glw\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\allocator\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\string\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\container\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\common\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\imgw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glew\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glfw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\types\modules\filesystem\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\soil\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\lunasvg\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>python $(ProjectDir)install.py $(ProjectDir) $(OutDirFullPath)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-expl|Win32'">
     <ClCompile>
@@ -231,7 +246,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\imgui\;$(ProjectDir)..\..\imgui\backends;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\implot\;$(ProjectDir)..\..\imgui-vs\amgui;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;$(ProjectDir)..\..\imgw\inc;$(ProjectDir)..\..\imgw\ext\imgui\;$(ProjectDir)..\..\imgw\ext\imgu-notify\;$(ProjectDir)..\..\imgw\ext\implot\;$(ProjectDir)..\..\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -240,8 +255,12 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>glew32s.lib;string.lib;container.lib;imgui.lib;opengl32.lib;glfw3.lib;allocator.lib;common.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\glw\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\allocator\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\string\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\container\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\common\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\imgui-vs\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glew\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glfw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\types\modules\filesystem\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\soil\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\lunasvg\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\glw\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\allocator\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\string\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\container\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\common\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\imgw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glew\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glfw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\types\modules\filesystem\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\soil\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\lunasvg\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>python $(ProjectDir)install.py $(ProjectDir) $(OutDirFullPath)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -249,19 +268,23 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\imgui\;$(ProjectDir)..\..\imgui\backends;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\implot\;$(ProjectDir)..\..\imgui-vs\amgui;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;$(ProjectDir)..\..\imgw\inc;$(ProjectDir)..\..\imgw\ext\imgui\;$(ProjectDir)..\..\imgw\ext\imgu-notify\;$(ProjectDir)..\..\imgw\ext\implot\;$(ProjectDir)..\..\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BrowseInformation>false</BrowseInformation>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glw.lib;imgui.lib;lunasvg.lib;soil.lib;filesystem.lib;glew32sd.lib;string.lib;container.lib;opengl32.lib;glfw3.lib;allocator.lib;common.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\glw\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\allocator\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\string\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\container\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\common\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\imgui-vs\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glew\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glfw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\types\modules\filesystem\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\soil\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\lunasvg\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glw.lib;imgw.lib;lunasvg.lib;soil.lib;filesystem.lib;glew32sd.lib;string.lib;container.lib;opengl32.lib;glfw3.lib;allocator.lib;common.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\glw\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\allocator\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\string\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\container\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\common\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\imgw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glew\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glfw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\types\modules\filesystem\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\soil\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\lunasvg\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <PreserveSbr>true</PreserveSbr>
     </Bscmake>
+    <PostBuildEvent>
+      <Command>python $(ProjectDir)install.py $(ProjectDir) $(OutDirFullPath)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -271,7 +294,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\imgui\;$(ProjectDir)..\..\imgui\backends;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\implot\;$(ProjectDir)..\..\imgui-vs\amgui;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;$(ProjectDir)..\..\imgw\inc;$(ProjectDir)..\..\imgw\ext\imgui\;$(ProjectDir)..\..\imgw\ext\imgu-notify\;$(ProjectDir)..\..\imgw\ext\implot\;$(ProjectDir)..\..\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -279,9 +302,13 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glw.lib;imgui.lib;filesystem.lib;lunasvg.lib;soil.lib;glew32s.lib;string.lib;container.lib;opengl32.lib;glfw3.lib;allocator.lib;common.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\glw\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\allocator\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\string\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\container\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\common\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\imgui-vs\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glew\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glfw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\types\modules\filesystem\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\soil\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\lunasvg\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glw.lib;imgw.lib;filesystem.lib;lunasvg.lib;soil.lib;glew32s.lib;string.lib;container.lib;opengl32.lib;glfw3.lib;allocator.lib;common.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\glw\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\allocator\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\string\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\container\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\common\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\imgw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glew\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glfw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\types\modules\filesystem\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\soil\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\lunasvg\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>python $(ProjectDir)install.py $(ProjectDir) $(OutDirFullPath)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-expl|x64'">
     <ClCompile>
@@ -291,7 +318,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\imgui\;$(ProjectDir)..\..\imgui\backends;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\implot\;$(ProjectDir)..\..\imgui-vs\amgui;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;$(ProjectDir)..\..\imgw\inc;$(ProjectDir)..\..\imgw\ext\imgui\;$(ProjectDir)..\..\imgw\ext\imgu-notify\;$(ProjectDir)..\..\imgw\ext\implot\;$(ProjectDir)..\..\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -300,8 +327,12 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>glew32s.lib;string.lib;container.lib;imgui.lib;opengl32.lib;glfw3.lib;allocator.lib;common.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\glw\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\allocator\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\string\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\container\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\common\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\imgui-vs\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glew\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glfw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\types\modules\filesystem\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\soil\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\lunasvg\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\glw\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\allocator\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\string\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\container\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\types\modules\common\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\imgw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glew\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\glfw\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\types\modules\filesystem\lib\$(Platform)\$(Configuration);$(ProjectDir)..\..\soil\lib\$(Platform)\$(Configuration)\;$(ProjectDir)..\..\lunasvg\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>python $(ProjectDir)install.py $(ProjectDir) $(OutDirFullPath)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent />
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

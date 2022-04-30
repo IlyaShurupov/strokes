@@ -1,56 +1,46 @@
 
 #include "app.h"
 
-StrokeApp::StrokeApp(vec2f size) : ogl(), window(size, ogl::window::FULL_SCREEN), fbo(size, rgba(0)), gui(&window) {
+StrokeApp::StrokeApp(vec2f size) : ImGui::CompleteApp(size, ogl::window::FULL_SCREEN) {
+	window.col_clear = rgba(0.2, 0.2, 0.23, 1);
+	main_window = false;
+	window.minsize.assign(1200, 400);
+
+	cam.lookat({0, 0, 0}, {100, 0, 0}, {0, 0, 1});
+
 	File db("data.strokes", osfile_openflags::LOAD);
 	load(db);
-
-	window.col_clear = rgba(0.2, 0.2, 0.23, 1);
 }
 
-void StrokeApp::proc_inputs() {
-	if (gui_is_active) {
+void StrokeApp::MainProcTick() {
+	if (gui_is_active || gui_active) {
 		return;
 	}
 
 	camera_controller();
-	sampler.sample(&layer.strokes, &layer.strokes_undo, window.cursor(true), window.pen_pressure(), &cam);
+	sampler.sample(&layer.strokes, &layer.strokes_undo, window.cursor(1), window.pen_pressure(), &cam);
 
 	if (!sampler.active_state() && sampler.has_input()) {
 		layer.add_stroke(sampler.get_stroke());
 		sampler.clear();
 	}
+
+	whait_for_event = !sampler.active_state();
 }
 
-void StrokeApp::send_output() {
+void StrokeApp::MainDrawTick() {
+	window.col_clear = layer.canvas_color;
+	mat4f cammat = (cam.projmat() * cam.viewmat()).transpose();
+	sampler.draw(cammat);
+	layer.draw(cammat);
 
-	window.begin_draw();
-	{
-		window.clear();
-
-		window.reset_viewport();
-
-		mat4f cammat = (cam.projmat() * cam.viewmat()).transpose();
-		sampler.draw(cammat);
-		layer.draw(cammat);
-
-		draw_ui();
-
-	} window.end_draw(/*sampler_active*/);
-}
-
-alni StrokeApp::run() {
-	while (!window.CloseSignal()) {
-		proc_inputs();
-		send_output();
-	}
-	return 0;
+	gui_draw();
 }
 
 void StrokeApp::camera_controller() {
 
-	static vec2f prevcur = window.cursor(true);
-	vec2f cur = window.cursor(true);
+	vec2f prevcur = window.prevcursor(1);
+	vec2f cur = window.cursor(1);
 
 	vec2f delta = prevcur - cur;
 	vec3f target = cam.get_target();
@@ -68,7 +58,6 @@ void StrokeApp::camera_controller() {
 	}
 
 	cam.set_ratio(window.aspect_ratio());
-	prevcur = cur;
 }
 
 struct StrokeApp_SaveHeader {
@@ -90,6 +79,9 @@ void StrokeApp::save(File& file) {
 	StrokeApp_SaveHeader head(layer.strokes.Len());
 	file.write<StrokeApp_SaveHeader>(&head);
 
+	file.write<rgba>(&layer.canvas_color);
+	file.write<camera>(&cam);
+
 	for (auto stiter : layer.strokes) {
 		stroke* str = &stiter.Data();
 		file.write<alni>(&str->points.length);
@@ -107,6 +99,9 @@ void StrokeApp::load(File& file) {
 	if (!memequal(head.name, "strokes", slen("strokes"))) {
 		return;
 	}
+
+	file.read<rgba>(&layer.canvas_color);
+	file.read<camera>(&cam);
 
 	for (alni str_idx = 0; str_idx < head.nstrokes; str_idx++) {
 		stroke str = stroke();
@@ -128,101 +123,4 @@ void StrokeApp::load(File& file) {
 StrokeApp::~StrokeApp() {
 	File db("data.strokes", osfile_openflags::SAVE);
 	save(db);
-}
-
-void StrokeApp::draw_brush_properties(rectf rect) {
-	halnf slider_size = 40;
-	halnf picker_size = 180;
-
-	rectf slider_rec = rectf(rect.x, rect.w + rect.y - slider_size, rect.z, slider_size);
-	if (sampler.eraser) {
-		gui.FloatSlider(slider_rec, sampler.eraser_size, 0.0001f, 0.2f);
-		popup_size.y = slider_size;
-	} else {
-		gui.FloatSlider(slider_rec, sampler.screen_thikness, 0.001f, 0.2f);
-		halnf size = MIN(rect.z, rect.w - (slider_size + 10));
-		CLAMP(size, 5, 1000);
-		gui.ColorPicker(rectf(rect.x + (rect.z - size) / 2, rect.y, size, size), sampler.stroke_col);
-
-		popup_size.y = picker_size + slider_size + 10;
-	}
-
-	popup_size.x = picker_size;
-}
-
-void StrokeApp::draw_toolbar(rectf rect) {
-
-	tool_bar_rect = rectf(window.size.x / 2.f - 350 / 2.f, window.size.y - 70, 300, 50);
-
-	rectf(*get_rect)(rectf & in) = [](rectf& in) {
-		static int idx = 0;
-		float butns = 5;
-		float item_size = in.z / butns;
-		float padding = item_size / 10;
-		item_size = item_size - padding;
-
-		rectf out = rectf(in.x + idx * (item_size + padding * 2), in.y, item_size, in.w);
-
-		if (idx == 4) {
-			idx = 0;
-		} else {
-			idx++;
-		}
-		return out;
-	};
-
-
-	if (gui.button(get_rect(rect), NULL, "../rsc/icons/Backward.png")) {
-		layer.undo();
-	}
-	if (gui.button(get_rect(rect), NULL, "../rsc/icons/Forward.png")) {
-		layer.redo();
-	}
-
-	{
-		rectf butrec = get_rect(rect);
-		if (gui.button(butrec, NULL, sampler.eraser ? "../rsc/icons/Eraser.png" : "../rsc/icons/Pen.png")) {
-			sampler.eraser = !sampler.eraser;
-		}
-
-		bool activator_howered = gui.item_howered;
-		if (activator_howered) {
-			tollbar_popup = true;
-		}
-
-		if (tollbar_popup) {
-			rectf poup_rec = rectf(butrec.x + butrec.z / 2 - popup_size.x / 2, butrec.y - 25 - popup_size.y, popup_size.x, popup_size.y);
-
-			bool should_close = !gui.pupup(poup_rec, 40);
-
-			if (should_close && !activator_howered) {
-				tollbar_popup = false;
-			} else {
-				draw_brush_properties(poup_rec);
-			}
-		}
-	}
-
-	if (gui.button(get_rect(rect), NULL, "../rsc/icons/Clear.png")) {
-		alni len = layer.strokes.Len();
-		for (alni idx = 0; idx < len; idx++) {
-			layer.undo();
-		}
-	}
-	if (gui.button(get_rect(rect), NULL, "../rsc/icons/Quit.png")) {
-		window.post_quit_event();
-	}
-}
-
-void StrokeApp::draw_ui() {
-	draw_toolbar(tool_bar_rect);
-
-	halnf cur_scale = (sampler.eraser ? sampler.eraser_size : sampler.screen_thikness) * window.size.x;
-	rectf cur_rect = rectf(window.cursor().x - cur_scale / 2, window.cursor().y - cur_scale / 2, cur_scale, cur_scale);
-
-	window.set_viewport(cur_rect);
-	draw_texture(0, get_tex("../rsc/icons/EraserCursor.png"));
-
-	gui_is_active = gui.gui_active;
-	gui.gui_active = false;
 }
