@@ -1,38 +1,67 @@
 
 #include "app.h"
 
-StrokeApp::StrokeApp(vec2f size) : ImGui::CompleteApp(size, ogl::window::FULL_SCREEN) {
+StrokeApp::StrokeApp(vec2f size) :
+	ImGui::CompleteApp(size, ogl::window::FULL_SCREEN, "rsc/style"),
+	objects_gui("data.strokes")
+{
 	window.col_clear = rgba(0.2, 0.2, 0.23, 1);
 	main_window = false;
 	window.minsize.assign(1200, 400);
 
-	cam.lookat({0, 0, 0}, {100, 0, 0}, {0, 0, 1});
-
-	File db("data.strokes", osfile_openflags::LOAD);
-	load(db);
+	Object* new_scratch = NULL;
+	alni dict_idx = objects_gui.root->items.Presents("Scratch");
+	if (dict_idx == -1) {
+		new_scratch = NDO->create("strokes");
+		objects_gui.root->items.Put("Scratch", new_scratch);
+	} else {
+		new_scratch = objects_gui.root->items[dict_idx];
+	}
+	objects_gui.cd(new_scratch, "Scratch");
 }
 
 void StrokeApp::MainProcTick() {
+
+	if (window.SpecialKey2()) {
+		show_explorer = !show_explorer;
+		show_properties = !show_properties;
+	}
+
+	if (!objects_gui.active || objects_gui.active->type->name != "strokes") {
+		project = NULL;
+		window.col_clear = rgba(0.22, 0.22, 0.25, 1);
+		return;
+	}
+
+	project = &NDO_CAST(StrokesObject, objects_gui.active)->project;
+
 	if (gui_is_active || gui_active) {
 		return;
 	}
 
 	camera_controller();
-	sampler.sample(&layer.strokes, &layer.strokes_undo, window.cursor(1), window.pen_pressure(), &cam);
+	project->sampler.sample(&project->layer.strokes, &project->layer.strokes_undo, window.cursor(1), window.pen_pressure(), &project->cam);
 
-	if (!sampler.active_state() && sampler.has_input()) {
-		layer.add_stroke(sampler.get_stroke());
-		sampler.clear();
+	if (!project->sampler.active_state() && project->sampler.has_input()) {
+		project->layer.add_stroke(project->sampler.get_stroke());
+		project->sampler.clear();
 	}
 
-	whait_for_event = !sampler.active_state();
+	whait_for_event = !project->sampler.active_state();
 }
 
 void StrokeApp::MainDrawTick() {
-	window.col_clear = layer.canvas_color;
-	mat4f cammat = (cam.projmat() * cam.viewmat()).transpose();
-	sampler.draw(cammat);
-	layer.draw(cammat);
+	draw_explorer();
+
+	if (!project) {
+		DrawTextR(rectf(window.size / 2, 0), "Select Strokes Object", fillcol);
+		return;
+	}
+
+	window.col_clear = project->layer.canvas_color;
+	mat4f cammat = (project->cam.projmat() * project->cam.viewmat()).transpose();
+	project->sampler.draw(cammat);
+	project->layer.draw(cammat);
 
 	gui_draw();
 }
@@ -43,84 +72,21 @@ void StrokeApp::camera_controller() {
 	vec2f cur = window.cursor(1);
 
 	vec2f delta = prevcur - cur;
-	vec3f target = cam.get_target();
+	vec3f target = project->cam.get_target();
 
 	if (glfwGetMouseButton(window.geth(), GLFW_MOUSE_BUTTON_3) == GLFW_PRESS) {
-		cam.rotate(delta.x * 5, delta.y * 5);
+		project->cam.rotate(delta.x * 5, delta.y * 5);
 	}
 
 	if (glfwGetMouseButton(window.geth(), GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {
-		cam.zoom((prevcur.y + 1.f) / (cur.y + 1.f));
+		project->cam.zoom((prevcur.y + 1.f) / (cur.y + 1.f));
 	}
 
 	if (glfwGetKey(window.geth(), GLFW_KEY_SPACE) == GLFW_PRESS) {
-		cam.move(cur, prevcur);
+		project->cam.move(cur, prevcur);
 	}
 
-	cam.set_ratio(window.aspect_ratio());
+	project->cam.set_ratio(window.aspect_ratio());
 }
 
-struct StrokeApp_SaveHeader {
-
-	char name[10] = {0};
-	char version[10] = {0};
-	alni nstrokes = 0;
-
-	StrokeApp_SaveHeader(alni nstrokes) {
-		memcp(&name, "strokes", slen("strokes") + 1);
-		memcp(&version, "0", slen("0") + 1);
-		this->nstrokes = nstrokes;
-	}
-
-	StrokeApp_SaveHeader() {}
-};
-
-void StrokeApp::save(File& file) {
-	StrokeApp_SaveHeader head(layer.strokes.Len());
-	file.write<StrokeApp_SaveHeader>(&head);
-
-	file.write<rgba>(&layer.canvas_color);
-	file.write<camera>(&cam);
-
-	for (auto stiter : layer.strokes) {
-		stroke* str = &stiter.Data();
-		file.write<alni>(&str->points.length);
-		file.write<rgba>(&str->mesh.color);
-
-		for (auto piter : str->points) {
-			file.write<stroke_point>(&piter.data());
-		}
-	}
-}
-
-void StrokeApp::load(File& file) {
-	StrokeApp_SaveHeader head;
-	file.read<StrokeApp_SaveHeader>(&head);
-	if (!memequal(head.name, "strokes", slen("strokes"))) {
-		return;
-	}
-
-	file.read<rgba>(&layer.canvas_color);
-	file.read<camera>(&cam);
-
-	for (alni str_idx = 0; str_idx < head.nstrokes; str_idx++) {
-		stroke str = stroke();
-
-		alni p_len; file.read<alni>(&p_len);
-		rgba color; file.read<rgba>(&color);
-
-		str.points.Reserve(p_len);
-
-		for (auto piter : str.points) {
-			file.read<stroke_point>(&piter.data());
-		}
-
-		str.mesh.color = color;
-		layer.add_stroke(str);
-	}
-}
-
-StrokeApp::~StrokeApp() {
-	File db("data.strokes", osfile_openflags::SAVE);
-	save(db);
-}
+StrokeApp::~StrokeApp() {}

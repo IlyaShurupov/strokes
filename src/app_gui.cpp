@@ -25,7 +25,7 @@ bool StrokeApp::button(rectf& rect) {
 		rect.size -= 12;
 	}
 
-	DrawRectF(rectf(rect.x - 2, rect.y - 2, rect.w + 4, rect.z + 4), rgba(0.33, 0.33, 0.33, 1), roundness + 3);
+	//DrawRectF(rectf(rect.x - 2, rect.y - 2, rect.w + 4, rect.z + 4), rgba(0.33, 0.33, 0.33, 1), roundness + 3);
 	DrawRectF(rect, uicol, roundness);
 
 	if (pressed) {
@@ -74,7 +74,6 @@ void StrokeApp::FloatSlider(rectf rect, float& val, float min, float max) {
 		}
 	}
 }
-
 
 void StrokeApp::ColorPicker(rectf rect, rgba& col) {
 
@@ -150,14 +149,14 @@ void StrokeApp::draw_brush_properties(rectf rect) {
 	halnf picker_size = 180;
 
 	rectf slider_rec = rectf(rect.x, rect.w + rect.y - slider_size, rect.z, slider_size);
-	if (sampler.eraser) {
-		FloatSlider(slider_rec, sampler.eraser_size, 0.0001f, 0.2f);
+	if (project->sampler.eraser) {
+		FloatSlider(slider_rec, project->sampler.eraser_size, 0.0001f, 0.2f);
 		popup_size.y = slider_size;
 	} else {
-		FloatSlider(slider_rec, sampler.screen_thikness, 0.001f, 0.2f);
+		FloatSlider(slider_rec, project->sampler.screen_thikness, 0.001f, 0.2f);
 		halnf size = MIN(rect.z, rect.w - (slider_size + 10));
 		CLAMP(size, 5, 1000);
-		ColorPicker(rectf(rect.x + (rect.z - size) / 2, rect.y, size, size), sampler.stroke_col);
+		ColorPicker(rectf(rect.x + (rect.z - size) / 2, rect.y, size, size), project->sampler.stroke_col);
 
 		popup_size.y = picker_size + slider_size + 10;
 	}
@@ -218,7 +217,7 @@ void StrokeApp::draw_properties() {
 			window_flags |= ImGuiWindowFlags_NoBackground;
 
 		ImGui::Begin("Properties", 0, window_flags);
-		
+
 		ImGui::PopStyleVar();
 		ImGui::PopStyleVar();
 
@@ -237,27 +236,91 @@ void StrokeApp::draw_properties() {
 
 	Begin("View");
 	if (Button("Reset Camera")) {
-		cam.lookat({0, 0, 0}, {100, 0, 0}, {0, 0, 1});
+		project->cam.lookat({0, 0, 0}, {100, 0, 0}, {0, 0, 1});
 	}
-	halnf fov = cam.get_fov();
+	halnf fov = project->cam.get_fov();
 	SliderFloat("Field Of View", &fov, 0.1, PI - 0.1);
-	cam.set_fov(fov);
+	project->cam.set_fov(fov);
 	End();
 
 	Begin("Canvas");
-	ColorPicker4("BackGround Color", &layer.canvas_color.r);
+	ColorPicker4("Back Color", &project->layer.canvas_color.r);
 	End();
 
 	Begin("Strokes");
-	SliderFloat("Input Precision", &sampler.screen_precision, 0, 0.1);
+	SliderFloat("Input Precision", &project->sampler.screen_precision, 0, 0.1);
 	Text("Denoising");
 	Text("Smothing");
 	Text("Deduction");
 	End();
 
+	if (Begin("UI")) {
+		Text("Todo");
+		if (0) {
+			ColorPicker4("Ui Color", &uicol.r);
+			ColorPicker4("Accent Color", &fillcol.r);
+
+			StyleEditor();
+			apply_style();
+		}
+	}
 	End();
 
+	End();
 	//ImGui::PopStyleVar();
+}
+
+void StrokeApp::draw_explorer() {
+	halni butt_size = 40.f;
+	halnf prop_size = 400;
+	rectf rec = rectf(0 + (show_explorer ? prop_size - 40 : 30), window.size.y - 70, butt_size, butt_size);
+	if (button(rec)) {
+		show_explorer = !show_explorer;
+	}
+
+	DrawLine(vec2f(rec.x + rec.z - 10, rec.y + 10), vec2f(rec.x + 10, rec.y + rec.w - 10), fillcol, 5);
+
+	if (!show_explorer) return;
+
+	using namespace ImGui;
+
+	{
+		SetNextWindowPos(ImVec2(rec.pos.x + rec.z / 2.f + 30 - prop_size, 10));
+		SetNextWindowSize(ImVec2(prop_size - 60, window.size.y - 20));
+
+		//ImGui::SetNextWindowViewport(viewport->ID);
+		PushStyleVar(ImGuiStyleVar_WindowRounding, 3.0f);
+		PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
+
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+		ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+			window_flags |= ImGuiWindowFlags_NoBackground;
+
+		Begin("Objects Explorer", 0, window_flags);
+
+		PopStyleVar();
+		PopStyleVar();
+
+		// Submit the DockSpace
+		ImGuiIO& io = ImGui::GetIO();
+		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
+			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+		}
+
+		if (BeginMenuBar()) {
+			Text("Object Explorer");
+			EndMenuBar();
+		}
+	}
+
+	End();
+
+	objects_gui.Draw();
 }
 
 void StrokeApp::draw_toolbar(rectf rect) {
@@ -275,21 +338,21 @@ void StrokeApp::draw_toolbar(rectf rect) {
 	}
 
 	if (button(but_rects[0])) {
-		layer.undo();
+		project->layer.undo();
 	}
 	draw_butt_undo_redo(but_rects[0]);
 
 	if (button(but_rects[1])) {
-		layer.redo();
+		project->layer.redo();
 	}
 	draw_butt_undo_redo(but_rects[1], true);
 
 
 	if (button(but_rects[2])) {
-		sampler.eraser = !sampler.eraser;
+		project->sampler.eraser = !project->sampler.eraser;
 	}
 	rectf& rec = but_rects[2];
-	if (sampler.eraser) {
+	if (project->sampler.eraser) {
 		DrawLine(rec.pos + 6, rec.pos + rec.size - 6, fillcol, 5);
 		DrawLine(vec2f(rec.x + rec.z - 6, rec.y + 6), vec2f(rec.x + 6, rec.y + rec.w - 6), fillcol, 5);
 	} else {
@@ -316,9 +379,9 @@ void StrokeApp::draw_toolbar(rectf rect) {
 	}
 
 	if (button(but_rects[3])) {
-		alni len = layer.strokes.Len();
+		alni len = project->layer.strokes.Len();
 		for (alni idx = 0; idx < len; idx++) {
-			layer.undo();
+			project->layer.undo();
 		}
 	}
 	rec = but_rects[3];
@@ -343,7 +406,7 @@ void StrokeApp::gui_draw() {
 	draw_toolbar(tool_bar_rect);
 	draw_properties();
 
-	halnf cur_scale = (sampler.eraser ? sampler.eraser_size : sampler.screen_thikness / 2.f) * window.size.x / 2.f;
+	halnf cur_scale = (project->sampler.eraser ? project->sampler.eraser_size : project->sampler.screen_thikness / 2.f) * window.size.x / 2.f;
 	DrawCircle(window.cursor(), cur_scale, rgba(0, 0, 0, 0.7), 4.f);
-	DrawCircle(window.cursor(), cur_scale, sampler.stroke_col, 2.f);
+	DrawCircle(window.cursor(), cur_scale, project->sampler.stroke_col, 2.f);
 }

@@ -11,12 +11,15 @@
 #include "strokes.h"
 
 #include "ImGuiClass.h"
+#include "ImGuiObjectEditor.h"
+
+#include "primitives/primitives.h"
+#include "strokesobject.h"
 
 class StrokeApp : public ImGui::CompleteApp {
 
-	camera cam;
-	drawlayer layer;
-	inputsmpler sampler;
+	ImGui::ImGuiObjectEditor objects_gui;
+	strokes_project* project = NULL;
 
 	public:
 
@@ -25,22 +28,17 @@ class StrokeApp : public ImGui::CompleteApp {
 
 	private:
 
-	void save(File& file);
-	void load(File& file);
-
 	void MainProcTick();
 	void MainDrawTick();
 
 	void camera_controller();
 
-
-	// FIXEME: Clean Up
 	private:
 
 	bool pushed(const rectf& rec);
 
-	rgba uicol = rgba(0.14, 0.14, 0.15, 0.97);
-	rgba fillcol = rgba(0.56, 0.56, 0.56, 1);
+	rgba uicol = rgba(0.37, 0.37, 0.41, 0.97);
+	rgba fillcol = rgba(0.75, 0.75, 0.75, 1);
 
 	halnf roundness = 10.f;
 
@@ -52,8 +50,10 @@ class StrokeApp : public ImGui::CompleteApp {
 	bool item_howered = false;
 
 	bool show_properties = false;
+	bool show_explorer = false;
 
 	void gui_draw();
+	void draw_explorer();
 
 	bool button(rectf& rect);
 	bool pupup(rectf rect, float safe_padding);

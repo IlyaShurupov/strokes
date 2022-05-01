@@ -13,6 +13,9 @@
     <ClCompile Include="..\src\strokes.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\strokesobject.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\inc\app.h">
@@ -23,6 +26,9 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>rcs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\strokesobject.h">
+      <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

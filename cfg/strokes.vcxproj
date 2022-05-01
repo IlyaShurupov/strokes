@@ -28,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\inc\app.h" />
+    <ClInclude Include="..\inc\strokesobject.h" />
     <ClInclude Include="..\inc\strokes.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
@@ -35,6 +36,7 @@
     <ClCompile Include="..\src\entry.cpp" />
     <ClCompile Include="..\src\app_gui.cpp" />
     <ClCompile Include="..\src\app.cpp" />
+    <ClCompile Include="..\src\strokesobject.cpp" />
     <ClCompile Include="..\src\strokes.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -163,35 +165,35 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(ProjectDir)..\bin\$(ProjectName)_$(Platform)_$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)..\bin\.tmp\$(ProjectName)_$(Platform)_$(Configuration)</IntDir>
+    <OutDir>$(ProjectDir)..\bin\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)..\bin\.tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(ProjectDir)..\bin\$(ProjectName)_$(Platform)_$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)..\bin\.tmp\$(ProjectName)_$(Platform)_$(Configuration)</IntDir>
+    <OutDir>$(ProjectDir)..\bin\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)..\bin\.tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-expl|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(ProjectDir)..\bin\$(ProjectName)_$(Platform)_$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)..\bin\.tmp\$(ProjectName)_$(Platform)_$(Configuration)</IntDir>
+    <OutDir>$(ProjectDir)..\bin\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)..\bin\.tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(ProjectDir)..\bin\$(ProjectName)_$(Platform)_$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)..\bin\.tmp\$(ProjectName)_$(Platform)_$(Configuration)</IntDir>
+    <OutDir>$(ProjectDir)..\bin\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)..\bin\.tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(ProjectDir)..\bin\$(ProjectName)_$(Platform)_$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)..\bin\.tmp\$(ProjectName)_$(Platform)_$(Configuration)</IntDir>
+    <OutDir>$(ProjectDir)..\bin\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)..\bin\.tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-expl|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(ProjectDir)..\bin\$(ProjectName)_$(Platform)_$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)..\bin\.tmp\$(ProjectName)_$(Platform)_$(Configuration)</IntDir>
+    <OutDir>$(ProjectDir)..\bin\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)..\bin\.tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -200,7 +202,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;$(ProjectDir)..\..\imgw\inc;$(ProjectDir)..\..\imgw\ext\imgui\;$(ProjectDir)..\..\imgw\ext\imgu-notify\;$(ProjectDir)..\..\imgw\ext\implot\;$(ProjectDir)..\..\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\objects\include;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;$(ProjectDir)..\..\imgw\inc;$(ProjectDir)..\..\imgw\ext\imgui\;$(ProjectDir)..\..\imgw\ext\imgu-notify\;$(ProjectDir)..\..\imgw\ext\implot\;$(ProjectDir)..\..\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -213,6 +215,10 @@
       <Command>python $(ProjectDir)install.py $(ProjectDir) $(OutDirFullPath)</Command>
     </PostBuildEvent>
     <PostBuildEvent />
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -222,7 +228,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;$(ProjectDir)..\..\imgw\inc;$(ProjectDir)..\..\imgw\ext\imgui\;$(ProjectDir)..\..\imgw\ext\imgu-notify\;$(ProjectDir)..\..\imgw\ext\implot\;$(ProjectDir)..\..\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\objects\include;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;$(ProjectDir)..\..\imgw\inc;$(ProjectDir)..\..\imgw\ext\imgui\;$(ProjectDir)..\..\imgw\ext\imgu-notify\;$(ProjectDir)..\..\imgw\ext\implot\;$(ProjectDir)..\..\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -237,6 +243,10 @@
       <Command>python $(ProjectDir)install.py $(ProjectDir) $(OutDirFullPath)</Command>
     </PostBuildEvent>
     <PostBuildEvent />
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-expl|Win32'">
     <ClCompile>
@@ -246,7 +256,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;$(ProjectDir)..\..\imgw\inc;$(ProjectDir)..\..\imgw\ext\imgui\;$(ProjectDir)..\..\imgw\ext\imgu-notify\;$(ProjectDir)..\..\imgw\ext\implot\;$(ProjectDir)..\..\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\objects\include;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;$(ProjectDir)..\..\imgw\inc;$(ProjectDir)..\..\imgw\ext\imgui\;$(ProjectDir)..\..\imgw\ext\imgu-notify\;$(ProjectDir)..\..\imgw\ext\implot\;$(ProjectDir)..\..\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -261,6 +271,10 @@
       <Command>python $(ProjectDir)install.py $(ProjectDir) $(OutDirFullPath)</Command>
     </PostBuildEvent>
     <PostBuildEvent />
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -268,7 +282,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;$(ProjectDir)..\..\imgw\inc;$(ProjectDir)..\..\imgw\ext\imgui\;$(ProjectDir)..\..\imgw\ext\imgu-notify\;$(ProjectDir)..\..\imgw\ext\implot\;$(ProjectDir)..\..\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\objects\include;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;$(ProjectDir)..\..\imgw\inc;$(ProjectDir)..\..\imgw\ext\imgui\;$(ProjectDir)..\..\imgw\ext\imgu-notify\;$(ProjectDir)..\..\imgw\ext\implot\;$(ProjectDir)..\..\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BrowseInformation>false</BrowseInformation>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
@@ -285,6 +299,10 @@
       <Command>python $(ProjectDir)install.py $(ProjectDir) $(OutDirFullPath)</Command>
     </PostBuildEvent>
     <PostBuildEvent />
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -294,7 +312,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;$(ProjectDir)..\..\imgw\inc;$(ProjectDir)..\..\imgw\ext\imgui\;$(ProjectDir)..\..\imgw\ext\imgu-notify\;$(ProjectDir)..\..\imgw\ext\implot\;$(ProjectDir)..\..\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\objects\include;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;$(ProjectDir)..\..\imgw\inc;$(ProjectDir)..\..\imgw\ext\imgui\;$(ProjectDir)..\..\imgw\ext\imgu-notify\;$(ProjectDir)..\..\imgw\ext\implot\;$(ProjectDir)..\..\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -309,6 +327,10 @@
       <Command>python $(ProjectDir)install.py $(ProjectDir) $(OutDirFullPath)</Command>
     </PostBuildEvent>
     <PostBuildEvent />
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-expl|x64'">
     <ClCompile>
@@ -318,7 +340,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;$(ProjectDir)..\..\imgw\inc;$(ProjectDir)..\..\imgw\ext\imgui\;$(ProjectDir)..\..\imgw\ext\imgu-notify\;$(ProjectDir)..\..\imgw\ext\implot\;$(ProjectDir)..\..\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\inc;$(ProjectDir)..\..\objects\include;$(ProjectDir)..\..\types\modules\common\inc;$(ProjectDir)..\..\types\modules\allocator\inc;$(ProjectDir)..\..\types\modules\filesystem\inc;$(ProjectDir)..\..\types\modules\container\inc;$(ProjectDir)..\..\types\modules\glw\inc;$(ProjectDir)..\..\types\modules\math\inc;$(ProjectDir)..\..\types\modules\string\inc;$(ProjectDir)..\..\glew\include;$(ProjectDir)..\..\glfw\include;$(ProjectDir)..\..\soil\include;$(ProjectDir)..\..\soil\src;$(ProjectDir)..\..\lunasvg\include;$(ProjectDir)..\..\imgw\inc;$(ProjectDir)..\..\imgw\ext\imgui\;$(ProjectDir)..\..\imgw\ext\imgu-notify\;$(ProjectDir)..\..\imgw\ext\implot\;$(ProjectDir)..\..\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -333,6 +355,10 @@
       <Command>python $(ProjectDir)install.py $(ProjectDir) $(OutDirFullPath)</Command>
     </PostBuildEvent>
     <PostBuildEvent />
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
