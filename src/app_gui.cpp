@@ -5,196 +5,20 @@
 
 #include "shader.h"
 
-bool StrokeApp::pushed(const rectf& rec) {
-	return rec.inside(window.cursor()) && window.rmb();
-}
-
-bool StrokeApp::button(rectf& rect) {
-
-	item_howered = rect.inside(window.cursor());
-
-	if (item_howered) {
-		rect.pos -= 4;
-		rect.size += 8;
-	}
-
-	bool pressed = pushed(rect);
-
-	if (window.pen_pressure() && item_howered) {
-		rect.pos += 6;
-		rect.size -= 12;
-	}
-
-	//DrawRectF(rectf(rect.x - 2, rect.y - 2, rect.w + 4, rect.z + 4), rgba(0.33, 0.33, 0.33, 1), roundness + 3);
-	DrawRectF(rect, uicol, roundness);
-
-	if (pressed) {
-		need_update = true;
-	}
-
-	gui_active |= item_howered;
-	return pressed;
-}
-
-bool StrokeApp::pupup(rectf rect, float safe_padding) {
-	rect.pos -= safe_padding;
-	rect.size += safe_padding * 2;
-	item_howered = rect.inside(window.cursor());
-	gui_active |= item_howered;
-	return item_howered;
-}
-
-void StrokeApp::FloatSlider(rectf rect, float& val, float min, float max) {
-
-	item_howered = rect.inside(window.cursor());
-	gui_active |= item_howered;
-
-	if (item_howered) {
-		rect.pos -= 3;
-		rect.size += 6;
-	}
-
-	CLAMP(val, min, max);
-	float pos = val / (max - min);
-	float controll_size = rect.z / 14;
-	rectf controll_rec = rectf(rect.x + pos * (rect.z - controll_size), rect.y + 5, controll_size, rect.w - 10);
-
-	if (controll_rec.inside(window.cursor())) {
-		controll_rec.x -= 2;
-		controll_rec.z += 4;
-	}
-
-	Texture(controll_rec, "rsc/icons/SliderControl.png");
-	Texture(rect, "rsc/icons/Slider.png");
-
-	if (glfwGetMouseButton(window.winp, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) {
-		if (item_howered) {
-			val = ((window.cursor().x - rect.x) / rect.z) * (max - min);
-			CLAMP(val, min, max);
-		}
-	}
-}
-
-void StrokeApp::ColorPicker(rectf rect, rgba& col) {
-
-	if (rect.inside(window.cursor())) {
-		rect.x -= 3;
-		rect.y -= 3;
-		rect.z += 6;
-		rect.w += 6;
-	}
-
-	gui_active |= item_howered;
-
-	bool active = glfwGetMouseButton(window.winp, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS;
-	vec2f center = vec2f((rect.x + rect.z / 2), (rect.y + rect.w / 2));
-	vec2f curs = window.cursor();
-
-	float sv_size = rect.z / 2;
-	rectf hs_edit_rec = rectf(rect.x + (rect.z - sv_size) / 2, rect.y + (rect.w - sv_size) / 2, sv_size, sv_size);
-
-	hsv hsvin = col.rgbs;
-	float angle = hsvin.h;
-
-	if (active) {
-		if (rect.inside(window.cursor())) {
-			if (hs_edit_rec.inside(window.cursor())) {
-				hsvin.s = ((curs.x - hs_edit_rec.x) / hs_edit_rec.z);
-				hsvin.v = ((curs.y - hs_edit_rec.y) / hs_edit_rec.w);
-
-				CLAMP(hsvin.s, 0, 1);
-				CLAMP(hsvin.v, 0, 1);
-			} else {
-				angle = trigs::atan2((curs.y - center.y), (curs.x - center.x));
-				hsvin.h = angle > 0 ? angle : 2 * PI + angle;
-			}
-		}
-	}
-
-	col = hsvin;
-
-	float dot_padding = 30;
-	halnf hue_dot_size = 7;
-	halnf vs_dot_size = 7;
-	vec2f hue_dot_pos = vec2f(rect.x + rect.z / 2.f + (rect.z - dot_padding) * trigs::cos(angle) / 2,
-		rect.y + rect.w / 2.f + (rect.w - dot_padding) * trigs::sin(angle) / 2);
-	vec2f vs_dot_pos = vec2f(hs_edit_rec.x + hs_edit_rec.z * hsvin.s, hs_edit_rec.y + hs_edit_rec.w * hsvin.v);
-
-	if (rect.inside(window.cursor())) {
-		if (hs_edit_rec.inside(window.cursor())) {
-			hue_dot_size -= 3;
-		} else {
-			vs_dot_size -= 3;
-		}
-	}
-
-	DrawCircleF(hue_dot_pos, hue_dot_size, rgba(1));
-	DrawCircleF(vs_dot_pos, vs_dot_size, rgba(1));
-
-	glViewport(hs_edit_rec.x, hs_edit_rec.y, hs_edit_rec.z, hs_edit_rec.w);
-
-	rgb hue_preview_col = hsv(hsvin.h, 1, 1);
-	glBegin(GL_QUADS);
-	glColor4f(1, 1, 1, 1); glVertex3f(-1.f, 1.f, -0.99);
-	glColor4f(0, 0, 0, 1); glVertex3f(-1.f, -1.f, -0.99);
-	glColor4f(0, 0, 0, 1); glVertex3f(1.f, -1.f, -0.99);
-	glColor4f(hue_preview_col.r, hue_preview_col.g, hue_preview_col.b, 1); glVertex3f(1.f, 1.f, -0.99);
-	glEnd();
-
-	Texture(rect, "rsc/icons/ColorPickerRGB.png");
-}
-
-void StrokeApp::draw_brush_properties(rectf rect) {
-	halnf slider_size = 40;
-	halnf picker_size = 180;
-
-	rectf slider_rec = rectf(rect.x, rect.w + rect.y - slider_size, rect.z, slider_size);
-	if (project->sampler.eraser) {
-		FloatSlider(slider_rec, project->sampler.eraser_size, 0.0001f, 0.2f);
-		popup_size.y = slider_size;
-	} else {
-		FloatSlider(slider_rec, project->sampler.screen_thikness, 0.001f, 0.2f);
-		halnf size = MIN(rect.z, rect.w - (slider_size + 10));
-		CLAMP(size, 5, 1000);
-		ColorPicker(rectf(rect.x + (rect.z - size) / 2, rect.y, size, size), project->sampler.stroke_col);
-
-		popup_size.y = picker_size + slider_size + 10;
-	}
-
-	popup_size.x = picker_size;
-}
-
-void StrokeApp::draw_butt_undo_redo(rectf rect, bool flip) {
-	halnf offset = rect.z / 7.f;
-	DrawTrigF(
-		vec2f(rect.x + (flip ? -offset : offset) + (flip * rect.z), rect.y + rect.w / 2),
-		vec2f(rect.x + rect.z / 2, rect.y + rect.w - offset),
-		vec2f(rect.x + rect.z / 2, rect.y + offset),
-		fillcol
-	);
-
-	halnf offset_x = rect.z / 5.f;
-	offset = rect.z / 3.f;
-	DrawRectF(rectf(
-		vec2f(rect.x + (flip ? offset_x : (rect.z / 2.f - 1.f)), rect.y + offset),
-		vec2f(rect.z / 2.f - offset_x, rect.w - offset * 2)
-	), fillcol, 0.f);
-}
-
 void StrokeApp::draw_properties() {
-	halni butt_size = 40.f;
+
+	halni butt_size = 50.f;
 	halnf prop_size = 450;
-	rectf rec = rectf(window.size.x - (show_properties ? prop_size : 70), window.size.y - 70, butt_size, butt_size);
-	if (button(rec)) {
+	rectf rec = rectf(window.size.x - (show_properties ? prop_size : 50), window.size.y, butt_size, butt_size);
+
+	ImGui::SetNextWindowPos(ImVec2(rec.x, window.size.y - rec.y));
+	ImGui::SetNextWindowSize(ImVec2(rec.z, rec.w));
+	ImGui::Begin("Properties button", 0, ImGui::frame_window);
+	const char* label = show_properties ? " > " : " < ";
+	if (ImGui::Button(label)) {
 		show_properties = !show_properties;
 	}
-
-	DrawLine(rec.pos + 10, rec.pos + rec.size - 10, fillcol, 5);
-	DrawLine(vec2f(rec.x + rec.z - 10, rec.y + 10), vec2f(rec.x + 10, rec.y + rec.w - 10), fillcol, 5);
-	DrawLine(vec2f(rec.x + rec.z / 2, rec.y + 6), vec2f(rec.x + rec.z / 2, rec.y + rec.w - 6), fillcol, 5);
-	DrawLine(vec2f(rec.x + 6, rec.y + rec.w / 2), vec2f(rec.x + rec.z - 6, rec.y + rec.w / 2), fillcol, 5);
-	DrawCircle(rec.pos + rec.size / 2.f, rec.size.x / 2.f - 15, fillcol, 10);
-	DrawCircle(rec.pos + rec.size / 2.f, rec.size.x / 2.f - 17, uicol, 5);
+	ImGui::End();
 
 	if (!show_properties) return;
 
@@ -244,14 +68,26 @@ void StrokeApp::draw_properties() {
 	End();
 
 	Begin("Canvas");
-	ColorPicker4("Back Color", &project->layer.canvas_color.r);
+
+	ImGui::Text("Background Color");
+
+	auto popup = HoverPopupBegin("sa");
+	if (popup) {
+		int flags = ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoSmallPreview | ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoInputs;
+		ColorPicker4("Back Color", &project->layer.canvas_color.r, flags);
+	}
+	HoverPopupEnd(popup);
+
 	End();
 
 	Begin("Strokes");
-	SliderFloat("Input Precision", &project->sampler.screen_precision, 0, 0.1);
-	Text("Denoising");
-	Text("Smothing");
-	Text("Deduction");
+	SliderFloat("Input Precision", &project->sampler.screen_precision, 0, 0.01);
+	if (SubMenuBegin("Denoise Passes", 1)) {
+		SliderInt("Position", &project->denoise_passes, 0, 10);
+		SliderInt("Thickness", &project->denoise_passes_thikness, 0, 10);
+		SubMenuEnd(1);
+	}
+	Text("Reduction");
 	End();
 
 	if (Begin("UI")) {
@@ -267,18 +103,22 @@ void StrokeApp::draw_properties() {
 	End();
 
 	End();
-	//ImGui::PopStyleVar();
 }
 
 void StrokeApp::draw_explorer() {
-	halni butt_size = 40.f;
+	halni butt_size = 50;
 	halnf prop_size = 400;
-	rectf rec = rectf(0 + (show_explorer ? prop_size - 40 : 30), window.size.y - 70, butt_size, butt_size);
-	if (button(rec)) {
+	rectf rec = rectf(0 + (show_explorer ? prop_size - 40 : 0), window.size.y, butt_size, butt_size);
+
+	ImGui::SetNextWindowPos(ImVec2(rec.x, window.size.y - rec.y));
+	ImGui::SetNextWindowSize(ImVec2(rec.z, rec.w));
+	ImGui::Begin("Explorer button", 0, ImGui::frame_window);
+
+	const char* label = show_explorer ? " < " : " > ";
+	if (ImGui::Button(label)) {
 		show_explorer = !show_explorer;
 	}
-
-	DrawLine(vec2f(rec.x + rec.z - 10, rec.y + 10), vec2f(rec.x + 10, rec.y + rec.w - 10), fillcol, 5);
+	ImGui::End();
 
 	if (!show_explorer) return;
 
@@ -323,87 +163,63 @@ void StrokeApp::draw_explorer() {
 	objects_gui.Draw();
 }
 
-void StrokeApp::draw_toolbar(rectf rect) {
-
-	halni buttlen = 5;
-	halnf padding = 10.f;
-	halni butt_size = 40.f;
-	halnf length = butt_size * buttlen + (padding - 1) * buttlen;
-
-	tool_bar_rect = rectf(window.size.x / 2.f - length / 2.f, window.size.y - 70, length, butt_size);
-
-	Array<rectf> but_rects(buttlen);
-	for (auto i : range(buttlen)) {
-		but_rects[i] = rectf(tool_bar_rect.x + (padding + butt_size) * i, tool_bar_rect.y, butt_size, butt_size);
-	}
-
-	if (button(but_rects[0])) {
-		project->layer.undo();
-	}
-	draw_butt_undo_redo(but_rects[0]);
-
-	if (button(but_rects[1])) {
-		project->layer.redo();
-	}
-	draw_butt_undo_redo(but_rects[1], true);
-
-
-	if (button(but_rects[2])) {
-		project->sampler.eraser = !project->sampler.eraser;
-	}
-	rectf& rec = but_rects[2];
+void StrokeApp::draw_brush_properties(rectf rect) {
+	ImGui::SetNextItemWidth(rect.w);
 	if (project->sampler.eraser) {
-		DrawLine(rec.pos + 6, rec.pos + rec.size - 6, fillcol, 5);
-		DrawLine(vec2f(rec.x + rec.z - 6, rec.y + 6), vec2f(rec.x + 6, rec.y + rec.w - 6), fillcol, 5);
+		ImGui::SliderFloat(" ", &project->sampler.eraser_size, 0.001f, 0.2f);
 	} else {
-		DrawLine(vec2f(rec.x + rec.z / 2, rec.y + 6), vec2f(rec.x + rec.z / 2, rec.y + rec.w - 6), fillcol, 5);
-		DrawLine(vec2f(rec.x + 6, rec.y + rec.w / 2), vec2f(rec.x + rec.z - 6, rec.y + rec.w / 2), fillcol, 5);
+		ImGui::SliderFloat(" ", &project->sampler.screen_thikness, 0.001f, 0.2f);
+
+		int flags = ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoSmallPreview | ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoInputs;
+		ImGui::ColorPicker4("Color", &project->sampler.stroke_col.r, flags);
 	}
+}
 
-	bool activator_howered = item_howered;
-	if (activator_howered) {
-		tollbar_popup = true;
-	}
+void StrokeApp::draw_toolbar(rectf rec) {
 
-	if (tollbar_popup) {
-		rectf& butrec = but_rects[2];
-		rectf poup_rec = rectf(butrec.x + butrec.z / 2 - popup_size.x / 2, butrec.y - 15 - popup_size.y, popup_size.x, popup_size.y);
+	ImGui::SetNextWindowPos(ImVec2(rec.x, window.size.y - rec.y));
+	ImGui::SetNextWindowSize(ImVec2(rec.z, rec.w));
 
-		bool should_close = !pupup(poup_rec, 40);
+	ImGui::Begin("ToolBar", 0, ImGui::frame_window);
 
-		if (should_close && !activator_howered) {
-			tollbar_popup = false;
-		} else {
-			draw_brush_properties(poup_rec);
-		}
-	}
+	if (ImGui::Button("Undo")) {
+		project->layer.undo();
+	} ImGui::SameLine();
 
-	if (button(but_rects[3])) {
+	if (ImGui::Button("Redo")) {
+		project->layer.redo();
+	} ImGui::SameLine();
+
+	const char* tool_lable = project->sampler.eraser ? "Brush" : "Eraser";
+	if (ImGui::Button(tool_lable)) {
+		project->sampler.eraser = !project->sampler.eraser;
+	} ImGui::SameLine();
+
+	const char* properties_lable = project->sampler.eraser ? "Size" : "Color";
+	if (ImGui::Button(properties_lable)) {
+		//project->sampler.eraser = !project->sampler.eraser;
+	} ImGui::SameLine();
+
+	auto popup = ImGui::HoverPopupBegin("ToolProperties", vec2f(150, 150), vec2f(rec.x + rec.w / 2 - 30, window.size.y - rec.y + rec.w - 10));
+	if (popup) { draw_brush_properties(rectf(0, 0, 300, 300)); }
+	ImGui::HoverPopupEnd(popup);
+
+	if (ImGui::Button("Clear")) {
 		alni len = project->layer.strokes.Len();
 		for (alni idx = 0; idx < len; idx++) {
 			project->layer.undo();
 		}
-	}
-	rec = but_rects[3];
-	DrawLine(vec2f(rec.x + rec.z / 2, rec.y + 6), vec2f(rec.x + rec.z / 2, rec.y + rec.w - 15), fillcol, 20);
-	DrawLine(vec2f(rec.x + 6, rec.y + rec.w / 2 + 10), vec2f(rec.x + rec.z - 6, rec.y + rec.w / 2 + 10), fillcol, 5);
+	} ImGui::SameLine();
 
-	if (button(but_rects[4])) {
+	if (ImGui::Button("Exit")) {
 		window.post_quit_event();
 	}
 
-	DrawCircle(but_rects[4].pos + but_rects[4].size / 2.f, but_rects[4].size.x / 2.f - 5, fillcol, 4);
-	DrawLine(vec2f(but_rects[4].x + but_rects[4].z / 2, but_rects[4].y + but_rects[4].w / 2.f),
-		vec2f(but_rects[4].x + but_rects[4].z / 2, but_rects[4].y + but_rects[4].w), uicol, 16);
-
-	DrawLine(vec2f(but_rects[4].x + but_rects[4].z / 2, but_rects[4].y + but_rects[4].w / 2.f),
-		vec2f(but_rects[4].x + but_rects[4].z / 2, but_rects[4].y + but_rects[4].w - 6), fillcol, 4);
+	ImGui::End();
 }
 
 void StrokeApp::gui_draw() {
-	gui_active = false;
-
-	draw_toolbar(tool_bar_rect);
+	draw_toolbar(rectf(window.size.x / 2.f - 185, window.size.y, 370, 60));
 	draw_properties();
 
 	halnf cur_scale = (project->sampler.eraser ? project->sampler.eraser_size : project->sampler.screen_thikness / 2.f) * window.size.x / 2.f;

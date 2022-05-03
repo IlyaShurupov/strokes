@@ -53,7 +53,7 @@ void stroke_mesh::draw_mesh(const mat4f& cammat) {
 	// 1st attribute buffer : vertices
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
 
 	// Draw the triangles ! // mode. count. type. element. array buffer offset
 	glDrawArrays(GL_TRIANGLES, 0, vbo.length);
@@ -113,8 +113,7 @@ vec3f stroke::split_dir(vec3f v1, vec3f v2, const vec3f& norm) {
 		mat3f rot_matrix = mat3f::rotmat(crossp, trigs::acos(v1.dot(v2)) / 2.f);
 		vec3f middle = rot_matrix * v1;
 		plane_normal = middle.cross(crossp);
-	}
-	else {
+	} else {
 		plane_normal = v2;
 	}
 
@@ -139,16 +138,14 @@ void stroke::gen_mesh() {
 
 		if (pidx > 0) {
 			pt0 = points[pidx - 1];
-		}
-		else {
+		} else {
 			pt0.pos = pt1.pos + (pt1.pos - pt2.pos);
 			pt0.thikness = 0.001;
 		}
 
 		if (pidx < points.length - 2) {
 			pt3 = points[pidx + 2];
-		}
-		else {
+		} else {
 			pt3.pos = pt2.pos + (pt2.pos - pt1.pos);
 			pt3.thikness = 0.001;
 		}
@@ -191,7 +188,7 @@ void drawlayer::redo() {
 
 void drawlayer::add_stroke(const stroke& str) {
 	strokes.PushBack(str);
-	 strokes.Last()->data.gen_mesh();
+	strokes.Last()->data.gen_mesh();
 }
 
 void drawlayer::draw(const mat4f& cammat) {
@@ -246,8 +243,7 @@ void inputsmpler::erase_util(list<stroke>* pull, list<stroke>* undo, const vec2f
 			undo->PushBack(str->data);
 			pull->DelNode(str);
 			str = tmp;
-		}
-		else {
+		} else {
 			str = str->next;
 		}
 	}
@@ -256,8 +252,7 @@ void inputsmpler::erase_util(list<stroke>* pull, list<stroke>* undo, const vec2f
 void inputsmpler::finish(const vec2f& cpos, camera* cam) {
 	if (input.points.length <= 1) {
 		input.points.Free();
-	}
-	else {
+	} else {
 		input.points[input.points.length - 1].thikness = 0.001;
 		cam->offset_target(0.0001);
 	}
@@ -281,22 +276,24 @@ void inputsmpler::sample(list<stroke>* pull, list<stroke>* undo, vec2f curs, flo
 	}
 
 	switch (is_active) {
-	case false: {
-		if (pressure) {
-			start(curs, cam);
-			is_active = true;
-		}
-		return;
-	}
-	case true: {
-		sample_util(curs, cam);
-		if (!pressure) {
-			finish(curs, cam);
-			is_active = false;
+		case false:
+		{
+			if (pressure) {
+				start(curs, cam);
+				is_active = true;
+			}
 			return;
 		}
-		return;
-	}
+		case true:
+		{
+			sample_util(curs, cam);
+			if (!pressure) {
+				finish(curs, cam);
+				is_active = false;
+				return;
+			}
+			return;
+		}
 	}
 }
 
@@ -322,6 +319,6 @@ void inputsmpler::clear() {
 	input.points.Free();
 	is_active = false;
 }
-const stroke& inputsmpler::get_stroke() {
+stroke& inputsmpler::get_stroke() {
 	return input;
 }

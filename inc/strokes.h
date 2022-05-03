@@ -53,6 +53,21 @@ struct stroke {
 	void drawcall(const mat4f& cammat);
 	void add_point(const stroke_point& p);
 
+	void denoise_positions(alni passes) {
+		for (auto pass : range(passes)) {
+			for (auto pi : range(points.Len() - 2)) {
+				points[pi + 1].pos = (points[pi].pos + points[pi + 2].pos)  / 2.f;
+			}
+		}
+	}
+
+	void denoise_thickness(alni passes) {
+		for (auto pass : range(passes)) {
+			for (auto pi : range(points.Len() - 2)) {
+				points[pi + 1].thikness = (points[pi].thikness + points[pi + 2].thikness) / 2.f;
+			}
+		}
+	}
 };
 
 class drawlayer {
@@ -61,7 +76,7 @@ class drawlayer {
 	list<stroke> strokes;
 	list<stroke> strokes_undo;
 
-	rgba canvas_color = rgba(0.22f, 0.22f, 0.23f, 1.f);
+	rgba canvas_color = rgba(0.22f, 0.22f, 0.25f, 1.f);
 	void undo();
 	void redo();
 
@@ -79,9 +94,9 @@ class inputsmpler {
 
 	rgba stroke_col = rgba(0.77, 0.77, 0.77, 1);
 
-	halnf screen_precision = 0.009f;
-	halnf precision = 0.004;
-	halnf screen_thikness = 0.02f;
+	halnf screen_precision = 0.002f;
+	halnf precision = 0.002;
+	halnf screen_thikness = 0.01f;
 	halnf thickness = 0.04;
 
 	bool eraser = false;
@@ -100,7 +115,7 @@ class inputsmpler {
 	bool active_state();
 	bool has_input();
 	void clear();
-	const stroke& get_stroke();
+	stroke& get_stroke();
 };
 
 struct strokes_project {
@@ -108,6 +123,9 @@ struct strokes_project {
 	camera cam;
 	drawlayer layer;
 	inputsmpler sampler;
+
+	halni denoise_passes = 1;
+	halni denoise_passes_thikness = 3;
 
 	strokes_project() {
 		cam.lookat({0, 0, 0}, {100, 0, 0}, {0, 0, 1});

@@ -1,10 +1,7 @@
 
 #include "app.h"
 
-StrokeApp::StrokeApp(vec2f size) :
-	ImGui::CompleteApp(size, ogl::window::FULL_SCREEN, "rsc/style"),
-	objects_gui("data.strokes")
-{
+StrokeApp::StrokeApp(vec2f size) : ImGui::CompleteApp(size, ogl::window::FULL_SCREEN, "rsc/style"), objects_gui("data.strokes") {
 	window.col_clear = rgba(0.2, 0.2, 0.23, 1);
 	main_window = false;
 	window.minsize.assign(1200, 400);
@@ -35,14 +32,21 @@ void StrokeApp::MainProcTick() {
 
 	project = &NDO_CAST(StrokesObject, objects_gui.active)->project;
 
-	if (gui_is_active || gui_active) {
+	if (gui_is_active) {
 		return;
 	}
 
 	camera_controller();
+
+	
 	project->sampler.sample(&project->layer.strokes, &project->layer.strokes_undo, window.cursor(1), window.pen_pressure(), &project->cam);
 
 	if (!project->sampler.active_state() && project->sampler.has_input()) {
+		stroke& str = project->sampler.get_stroke();
+		
+		str.denoise_positions(project->denoise_passes);
+		str.denoise_thickness(project->denoise_passes_thikness);
+
 		project->layer.add_stroke(project->sampler.get_stroke());
 		project->sampler.clear();
 	}
