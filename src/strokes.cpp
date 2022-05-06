@@ -215,7 +215,7 @@ bool inputsmpler::passed(const vec3f& point) {
 void inputsmpler::start(const vec2f& cpos, camera* cam) {
 	input.points.Free();
 	vec3f point = cam->project(cpos);
-	add_point(point, cam->get_fw(), 0.0001f);
+	add_point(point, cam->get_fw(), 0.001f);
 }
 
 void inputsmpler::sample_util(const vec2f& cpos, camera* cam) {
@@ -253,7 +253,6 @@ void inputsmpler::finish(const vec2f& cpos, camera* cam) {
 	if (input.points.length <= 1) {
 		input.points.Free();
 	} else {
-		input.points[input.points.length - 1].thikness = 0.001;
 		cam->offset_target(0.0001);
 	}
 }

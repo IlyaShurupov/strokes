@@ -19,11 +19,6 @@ StrokeApp::StrokeApp(vec2f size) : ImGui::CompleteApp(size, ogl::window::FULL_SC
 
 void StrokeApp::MainProcTick() {
 
-	if (window.SpecialKey2()) {
-		show_explorer = !show_explorer;
-		show_properties = !show_properties;
-	}
-
 	if (!objects_gui.active || objects_gui.active->type->name != "strokes") {
 		project = NULL;
 		window.col_clear = rgba(0.22, 0.22, 0.25, 1);
@@ -38,14 +33,18 @@ void StrokeApp::MainProcTick() {
 
 	camera_controller();
 
-	
-	project->sampler.sample(&project->layer.strokes, &project->layer.strokes_undo, window.cursor(1), window.pen_pressure(), &project->cam);
+	halnf pen_pressure = ImGui::BezierValue(window.pen_pressure(), tablet_input_formater);
+	project->sampler.sample(&project->layer.strokes, &project->layer.strokes_undo, window.cursor(1), pen_pressure, &project->cam);
 
 	if (!project->sampler.active_state() && project->sampler.has_input()) {
 		stroke& str = project->sampler.get_stroke();
-		
+
 		str.denoise_positions(project->denoise_passes);
 		str.denoise_thickness(project->denoise_passes_thikness);
+
+		if (project->auto_reduction) {
+			str.reduce_nof_points(project->pass_factor);
+		}
 
 		project->layer.add_stroke(project->sampler.get_stroke());
 		project->sampler.clear();
@@ -55,19 +54,14 @@ void StrokeApp::MainProcTick() {
 }
 
 void StrokeApp::MainDrawTick() {
-	draw_explorer();
-
-	if (!project) {
-		DrawTextR(rectf(window.size / 2, 0), "Select Strokes Object", fillcol);
-		return;
-	}
-
-	window.col_clear = project->layer.canvas_color;
-	mat4f cammat = (project->cam.projmat() * project->cam.viewmat()).transpose();
-	project->sampler.draw(cammat);
-	project->layer.draw(cammat);
-
 	gui_draw();
+
+	if (project) {
+		window.col_clear = project->layer.canvas_color;
+		mat4f cammat = (project->cam.projmat() * project->cam.viewmat()).transpose();
+		project->sampler.draw(cammat);
+		project->layer.draw(cammat);
+	}
 }
 
 void StrokeApp::camera_controller() {

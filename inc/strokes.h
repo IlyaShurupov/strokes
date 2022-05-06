@@ -56,7 +56,7 @@ struct stroke {
 	void denoise_positions(alni passes) {
 		for (auto pass : range(passes)) {
 			for (auto pi : range(points.Len() - 2)) {
-				points[pi + 1].pos = (points[pi].pos + points[pi + 2].pos)  / 2.f;
+				points[pi + 1].pos = (points[pi].pos + points[pi + 2].pos) / 2.f;
 			}
 		}
 	}
@@ -66,6 +66,46 @@ struct stroke {
 			for (auto pi : range(points.Len() - 2)) {
 				points[pi + 1].thikness = (points[pi].thikness + points[pi + 2].thikness) / 2.f;
 			}
+		}
+	}
+
+	void reduce_nof_points(halnf pass_factor) {
+		if (points.length < 3) {
+			return;
+		}
+
+		list<stroke_point> passed_poits;
+
+		for (auto idx : range(points.length)) {
+			passed_poits.PushBack({points[idx]});
+		}
+
+		list_node<stroke_point>* min_node = NULL;
+		do {
+			min_node = NULL;
+			halnf min_factor = pass_factor;
+
+			list_node<stroke_point>* iter = passed_poits.First()->next;
+			for (; iter->next; iter = iter->next) {
+				vec3f dir1 = (iter->data.pos - iter->prev->data.pos).normalize();
+				vec3f dir2 = (iter->next->data.pos - iter->data.pos).normalize();
+				halnf factor = 1 - dir1.dot(dir2);
+
+				if (factor < min_factor) {
+					min_node = iter;
+					min_factor = factor;
+				}
+			}
+
+			if (min_node) {
+				passed_poits.DelNode(min_node);
+			}
+		} while (min_node);
+
+		
+		points.Reserve(passed_poits.Len());
+		for (auto point : passed_poits) {
+			points[point.Idx()] = point.Data();
 		}
 	}
 };
@@ -82,6 +122,24 @@ class drawlayer {
 
 	void add_stroke(const stroke& str);
 	void draw(const mat4f& cammat);
+
+	void clear_history() {
+		strokes_undo.Clear();
+	}
+
+	void clear_canvas() {
+		alni len = strokes.Len();
+		for (alni idx = 0; idx < len; idx++) {
+			undo();
+		}
+	}
+
+	void reduce_size(halnf pass_factor) {
+		for (auto str : strokes) {
+			str.Data().reduce_nof_points(pass_factor);
+			str.Data().gen_mesh();
+		}
+	}
 };
 
 class inputsmpler {
@@ -94,7 +152,7 @@ class inputsmpler {
 
 	rgba stroke_col = rgba(0.77, 0.77, 0.77, 1);
 
-	halnf screen_precision = 0.002f;
+	halnf screen_precision = 0.000f;
 	halnf precision = 0.002;
 	halnf screen_thikness = 0.01f;
 	halnf thickness = 0.04;
@@ -126,6 +184,8 @@ struct strokes_project {
 
 	halni denoise_passes = 1;
 	halni denoise_passes_thikness = 3;
+	bool auto_reduction = true;
+	halnf pass_factor = halnf(0.001);
 
 	strokes_project() {
 		cam.lookat({0, 0, 0}, {100, 0, 0}, {0, 0, 1});
@@ -169,6 +229,10 @@ struct strokes_project {
 		file.write<camera>(&cam);
 
 		file.write<rgba>(&layer.canvas_color);
+
+		//file.write<rgba>(&layer.canvas_color);
+		//file.write<halnf>(&sampler.eraser_size);
+		//file.write<halnf>(&sampler.screen_thikness);
 
 		alni len = layer.strokes.Len();
 		file.write<alni>(&len);
@@ -215,6 +279,5 @@ struct strokes_project {
 		}
 	}
 
-	~strokes_project() {
-	}
+	~strokes_project() {}
 };
