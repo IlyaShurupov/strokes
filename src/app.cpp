@@ -4,7 +4,7 @@
 StrokeApp::StrokeApp(vec2f size) : ImGui::CompleteApp(size, ogl::window::FULL_SCREEN, "rsc/style"), objects_gui("data.strokes") {
 	window.col_clear = rgba(0.2, 0.2, 0.23, 1);
 	main_window = false;
-	window.minsize.assign(1200, 400);
+	window.minsize.assign(400, 400);
 
 	Object* new_scratch = NULL;
 	alni dict_idx = objects_gui.root->items.Presents("Scratch");
@@ -31,10 +31,14 @@ void StrokeApp::MainProcTick() {
 		return;
 	}
 
+	if (!project->active_layer) {
+		return;
+	}
+
 	camera_controller();
 
 	halnf pen_pressure = ImGui::BezierValue(window.pen_pressure(), tablet_input_formater);
-	project->sampler.sample(&project->layer.strokes, &project->layer.strokes_undo, window.cursor(1), pen_pressure, &project->cam);
+	project->sampler.sample(&project->active_layer->strokes, &project->active_layer->strokes_undo, window.cursor(1), pen_pressure, &project->cam);
 
 	if (!project->sampler.active_state() && project->sampler.has_input()) {
 		stroke& str = project->sampler.get_stroke();
@@ -46,7 +50,7 @@ void StrokeApp::MainProcTick() {
 			str.reduce_nof_points(project->pass_factor);
 		}
 
-		project->layer.add_stroke(project->sampler.get_stroke());
+		project->active_layer->add_stroke(project->sampler.get_stroke());
 		project->sampler.clear();
 	}
 
@@ -57,10 +61,16 @@ void StrokeApp::MainDrawTick() {
 	gui_draw();
 
 	if (project) {
-		window.col_clear = project->layer.canvas_color;
 		mat4f cammat = (project->cam.projmat() * project->cam.viewmat()).transpose();
 		project->sampler.draw(cammat);
-		project->layer.draw(cammat);
+
+		for (alni idx = project->layers.Len() - 1; idx > -1; idx--) {
+			if (!project->layers[idx]->hiden) {
+				project->layers[idx]->draw(cammat);
+			}
+		}
+
+		window.col_clear = project->canvas_color;
 	}
 }
 

@@ -3,6 +3,8 @@
 
 #include "glutils.h"
 
+#include "strokes_version.h"
+
 void stroke_mesh::init() {
 	static ogl::shader shader("rsc/shaders/stroke", NULL, "rsc/shaders/stroke");
 	this->shader = &shader;
@@ -320,4 +322,35 @@ void inputsmpler::clear() {
 }
 stroke& inputsmpler::get_stroke() {
 	return input;
+}
+
+
+alni strokes_project::save_size() {
+	alni version_size = StrokesVersion1::save_size(this);
+	return version_size + sizeof(ProjectInfo);
+}
+
+void strokes_project::save(File& file) {
+	ProjectInfo head;
+	head.init(1);
+	file.write<ProjectInfo>(&head);
+	StrokesVersion1::save(file, this);
+}
+
+void strokes_project::load(File& file) {
+	ProjectInfo head;
+	file.read<ProjectInfo>(&head);
+
+	if (string(head.name) != "strokes") {
+		return;
+	}
+
+	alni version = string(head.version);
+	if (version > 1 || version < 0) {
+		return;
+	}
+
+	version == 1 ? StrokesVersion1::load(file, this) : StrokesVersion0::load(file, this);
+
+	active_layer = get_base_layer();
 }

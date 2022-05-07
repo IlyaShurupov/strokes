@@ -6,6 +6,7 @@
 
 #include "array.h"
 #include "list.h"
+#include "map.h"
 #include "topology.h"
 
 struct stroke_mesh {
@@ -112,11 +113,11 @@ struct stroke {
 
 class drawlayer {
 	public:
-
+	string name = "new layer";
 	list<stroke> strokes;
 	list<stroke> strokes_undo;
+	bool hiden = false;
 
-	rgba canvas_color = rgba(0.22f, 0.22f, 0.25f, 1.f);
 	void undo();
 	void redo();
 
@@ -139,6 +140,11 @@ class drawlayer {
 			str.Data().reduce_nof_points(pass_factor);
 			str.Data().gen_mesh();
 		}
+	}
+
+	void clear() {
+		strokes.Clear();
+		strokes_undo.Clear();
 	}
 };
 
@@ -179,8 +185,10 @@ class inputsmpler {
 struct strokes_project {
 
 	camera cam;
-	drawlayer layer;
+	drawlayer* active_layer = NULL;
+	list<drawlayer*> layers;
 	inputsmpler sampler;
+	rgba canvas_color = rgba(0.22f, 0.22f, 0.25f, 1.f);
 
 	halni denoise_passes = 1;
 	halni denoise_passes_thikness = 3;
@@ -191,93 +199,26 @@ struct strokes_project {
 		cam.lookat({0, 0, 0}, {100, 0, 0}, {0, 0, 1});
 	}
 
-	struct ProjectInfo {
-		char name[10] = {0};
-		char version[10] = {0};
-
-		ProjectInfo(bool default_val = true) {
-			if (default_val) {
-				memcp(&name, "strokes", slen("strokes") + 1);
-				memcp(&version, "0", slen("0") + 1);
-			}
+	drawlayer* get_base_layer() {
+		if (!layers.Len()) {
+			layers.PushBack(new drawlayer());
 		}
-	};
-
-	alni save_size() {
-		alni out = 0;
-		out += sizeof(ProjectInfo);
-		out += sizeof(camera);
-		out += sizeof(rgba);
-
-		out += sizeof(alni);
-
-		for (auto stiter : layer.strokes) {
-			stroke* str = &stiter.Data();
-
-			out += sizeof(alni);
-			out += sizeof(rgba);
-
-			out += str->points.length * sizeof(stroke_point);
-		}
-		return out;
+		return layers[0];
 	}
 
-	void save(File& file) {
-		ProjectInfo head;
-		file.write<ProjectInfo>(&head);
-
-		file.write<camera>(&cam);
-
-		file.write<rgba>(&layer.canvas_color);
-
-		//file.write<rgba>(&layer.canvas_color);
-		//file.write<halnf>(&sampler.eraser_size);
-		//file.write<halnf>(&sampler.screen_thikness);
-
-		alni len = layer.strokes.Len();
-		file.write<alni>(&len);
-		for (auto stiter : layer.strokes) {
-			stroke* str = &stiter.Data();
-
-			file.write<alni>(&str->points.length);
-			file.write<rgba>(&str->mesh.color);
-
-			for (auto piter : str->points) {
-				file.write<stroke_point>(&piter.data());
-			}
+	void append_layers(drawlayer* base) {
+		for (auto lay : layers) {
+			base->strokes += lay->strokes;
 		}
 	}
 
-	void load(File& file) {
-		ProjectInfo head(false);
-		file.read<ProjectInfo>(&head);
-		if (!memequal(head.name, "strokes", slen("strokes"))) {
-			return;
-		}
+	alni save_size();
+	void save(File& file);
+	void load(File& file);
 
-		file.read<camera>(&cam);
-
-		file.read<rgba>(&layer.canvas_color);
-
-		alni len = layer.strokes.Len();
-		file.read<alni>(&len);
-
-		for (alni str_idx = 0; str_idx < len; str_idx++) {
-			stroke str = stroke();
-
-			alni p_len; file.read<alni>(&p_len);
-			rgba color; file.read<rgba>(&color);
-
-			str.points.Reserve(p_len);
-
-			for (auto piter : str.points) {
-				file.read<stroke_point>(&piter.data());
-			}
-
-			str.mesh.color = color;
-			layer.add_stroke(str);
+	~strokes_project() {
+		for (auto lay : layers) {
+			delete lay.Data();
 		}
 	}
-
-	~strokes_project() {}
 };

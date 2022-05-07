@@ -30,6 +30,7 @@
     <ClInclude Include="..\inc\app.h" />
     <ClInclude Include="..\inc\strokesobject.h" />
     <ClInclude Include="..\inc\strokes.h" />
+    <ClInclude Include="..\inc\strokes_version.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

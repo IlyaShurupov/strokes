@@ -30,6 +30,9 @@
     <ClInclude Include="..\inc\strokesobject.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="..\inc\strokes_version.h">
+      <Filter>inc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\rsc\shaders\Texture.frag">
