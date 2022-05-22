@@ -5,6 +5,8 @@
 
 #include "strokes_version.h"
 
+using namespace tp;
+
 void stroke_mesh::init() {
 	static ogl::shader shader("rsc/shaders/stroke", NULL, "rsc/shaders/stroke");
 	this->shader = &shader;
@@ -40,7 +42,7 @@ void stroke_mesh::bind_buffers() {
 	glBindVertexArray(VertexArrayID);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vbo[0]) * vbo.length, vbo.buff, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vbo[0]) * vbo.length(), vbo.buff(), GL_STATIC_DRAW);
 }
 
 
@@ -58,7 +60,7 @@ void stroke_mesh::draw_mesh(const mat4f& cammat) {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
 
 	// Draw the triangles ! // mode. count. type. element. array buffer offset
-	glDrawArrays(GL_TRIANGLES, 0, vbo.length);
+	glDrawArrays(GL_TRIANGLES, 0, vbo.length());
 
 	glDisableVertexAttribArray(0);
 
@@ -112,7 +114,7 @@ vec3f stroke::split_dir(vec3f v1, vec3f v2, const vec3f& norm) {
 
 	if (val > -0.999999) {
 		vec3f crossp = v1.cross(v2);
-		mat3f rot_matrix = mat3f::rotmat(crossp, trigs::acos(v1.dot(v2)) / 2.f);
+		mat3f rot_matrix = mat3f::rotmat(crossp, acos(v1.dot(v2)) / 2.f);
 		vec3f middle = rot_matrix * v1;
 		plane_normal = middle.cross(crossp);
 	} else {
@@ -124,11 +126,11 @@ vec3f stroke::split_dir(vec3f v1, vec3f v2, const vec3f& norm) {
 
 void stroke::gen_mesh() {
 
-	alni nvert = (points.length - 1) * 6;
+	alni nvert = (points.length() - 1) * 6;
 
-	mesh.vbo.Reserve(nvert);
+	mesh.vbo.reserve(nvert);
 
-	for (alni pidx = 0; pidx < points.length - 1; pidx++) {
+	for (alni pidx = 0; pidx < points.length() - 1; pidx++) {
 
 		stroke_point pt0;
 		stroke_point pt1 = points[pidx];
@@ -145,7 +147,7 @@ void stroke::gen_mesh() {
 			pt0.thikness = 0.001;
 		}
 
-		if (pidx < points.length - 2) {
+		if (pidx < points.length() - 2) {
 			pt3 = points[pidx + 2];
 		} else {
 			pt3.pos = pt2.pos + (pt2.pos - pt1.pos);
@@ -170,31 +172,31 @@ void stroke::drawcall(const mat4f& cammat) {
 }
 
 void stroke::add_point(const stroke_point& p) {
-	points.PushBack(p);
+	points.pushBack(p);
 }
 
 
 void drawlayer::undo() {
-	if (strokes.Last()) {
-		strokes_undo.PushBack(strokes.Last()->data);
-		strokes.DelNode(strokes.Last());
+	if (strokes.last()) {
+		strokes_undo.pushBack(strokes.last()->data);
+		strokes.delNode(strokes.last());
 	}
 }
 
 void drawlayer::redo() {
-	if (strokes_undo.Last()) {
-		strokes.PushBack(strokes_undo.Last()->data);
-		strokes_undo.DelNode(strokes_undo.Last());
+	if (strokes_undo.last()) {
+		strokes.pushBack(strokes_undo.last()->data);
+		strokes_undo.delNode(strokes_undo.last());
 	}
 }
 
 void drawlayer::add_stroke(const stroke& str) {
-	strokes.PushBack(str);
-	strokes.Last()->data.gen_mesh();
+	strokes.pushBack(str);
+	strokes.last()->data.gen_mesh();
 }
 
 void drawlayer::draw(const mat4f& cammat) {
-	for (list_node<stroke>* str = strokes.Last(); str; str = str->prev) {
+	for (list_node<stroke>* str = strokes.last(); str; str = str->prev) {
 		str->data.drawcall(cammat);
 	}
 }
@@ -208,28 +210,28 @@ void inputsmpler::add_point(const vec3f& pos, const vec3f& norm, float thickness
 }
 
 bool inputsmpler::passed(const vec3f& point) {
-	if (input.points.length) {
-		return (point - input.points[input.points.length - 1].pos).length() > precision;
+	if (input.points.length()) {
+		return (point - input.points[input.points.length() - 1].pos).length() > precision;
 	}
 	return true;
 }
 
-void inputsmpler::start(const vec2f& cpos, camera* cam) {
-	input.points.Free();
+void inputsmpler::start(const vec2f& cpos, Camera* cam) {
+	input.points.free();
 	vec3f point = cam->project(cpos);
 	add_point(point, cam->get_fw(), 0.001f);
 }
 
-void inputsmpler::sample_util(const vec2f& cpos, camera* cam) {
+void inputsmpler::sample_util(const vec2f& cpos, Camera* cam) {
 	vec3f point = cam->project(cpos);
 	if (passed(point)) {
 		add_point(point, cam->get_fw(), thickness);
 	}
 }
 
-void inputsmpler::erase_util(list<stroke>* pull, list<stroke>* undo, const vec2f& cpos, camera* cam) {
+void inputsmpler::erase_util(List<stroke>* pull, List<stroke>* undo, const vec2f& cpos, Camera* cam) {
 
-	list_node<stroke>* str = pull->First();
+	list_node<stroke>* str = pull->first();
 	while (str) {
 		bool remove = false;
 
@@ -242,8 +244,8 @@ void inputsmpler::erase_util(list<stroke>* pull, list<stroke>* undo, const vec2f
 
 		if (remove) {
 			list_node<stroke>* tmp = str->next;
-			undo->PushBack(str->data);
-			pull->DelNode(str);
+			undo->pushBack(str->data);
+			pull->delNode(str);
 			str = tmp;
 		} else {
 			str = str->next;
@@ -251,22 +253,22 @@ void inputsmpler::erase_util(list<stroke>* pull, list<stroke>* undo, const vec2f
 	}
 }
 
-void inputsmpler::finish(const vec2f& cpos, camera* cam) {
-	if (input.points.length <= 1) {
-		input.points.Free();
+void inputsmpler::finish(const vec2f& cpos, Camera* cam) {
+	if (input.points.length() <= 1) {
+		input.points.free();
 	} else {
 		cam->offset_target(0.0001);
 	}
 }
 
-void inputsmpler::sample(list<stroke>* pull, list<stroke>* undo, vec2f curs, float pressure, camera* cam) {
+void inputsmpler::sample(List<stroke>* pull, List<stroke>* undo, vec2f curs, float pressure, Camera* cam) {
 
 	this->input.mesh.color = stroke_col;
 	this->pressure = pressure;
 
 	if (eraser) {
 		if (pressure > 0) {
-			input.points.Free();
+			input.points.free();
 			erase_util(pull, undo, curs, cam);
 		}
 		return;
@@ -300,24 +302,24 @@ void inputsmpler::sample(list<stroke>* pull, list<stroke>* undo, vec2f curs, flo
 
 void inputsmpler::draw(const mat4f& cammat) {
 
-	static int prev_len = input.points.length;
-	if (input.points.length > 1) {
-		if (prev_len < input.points.length) {
+	static int prev_len = input.points.length();
+	if (input.points.length() > 1) {
+		if (prev_len < input.points.length()) {
 			input.gen_mesh();
 		}
 		input.drawcall(cammat);
 	}
-	prev_len = input.points.length;
+	prev_len = input.points.length();
 }
 
 bool inputsmpler::active_state() {
 	return is_active;
 }
 bool inputsmpler::has_input() {
-	return input.points.length > 1;
+	return input.points.length() > 1;
 }
 void inputsmpler::clear() {
-	input.points.Free();
+	input.points.free();
 	is_active = false;
 }
 stroke& inputsmpler::get_stroke() {

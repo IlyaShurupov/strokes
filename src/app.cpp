@@ -1,16 +1,19 @@
 
 #include "app.h"
 
+using namespace tp;
+using namespace obj;
+
 StrokeApp::StrokeApp(vec2f size) : ImGui::CompleteApp(size, ogl::window::FULL_SCREEN, "rsc/style"), objects_gui("data.strokes") {
 	window.col_clear = rgba(0.2, 0.2, 0.23, 1);
 	main_window = false;
 	window.minsize.assign(400, 400);
 
 	Object* new_scratch = NULL;
-	alni dict_idx = objects_gui.root->items.Presents("Scratch");
+	alni dict_idx = objects_gui.root->items.presents("Scratch");
 	if (dict_idx == -1) {
 		new_scratch = NDO->create("strokes");
-		objects_gui.root->items.Put("Scratch", new_scratch);
+		objects_gui.root->items.put("Scratch", new_scratch);
 	} else {
 		new_scratch = objects_gui.root->items[dict_idx];
 	}
@@ -64,7 +67,7 @@ void StrokeApp::MainDrawTick() {
 		mat4f cammat = (project->cam.projmat() * project->cam.viewmat()).transpose();
 		project->sampler.draw(cammat);
 
-		for (alni idx = project->layers.Len() - 1; idx > -1; idx--) {
+		for (alni idx = project->layers.length() - 1; idx > -1; idx--) {
 			if (!project->layers[idx]->hiden) {
 				project->layers[idx]->draw(cammat);
 			}

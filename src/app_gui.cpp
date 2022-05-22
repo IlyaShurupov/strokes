@@ -8,6 +8,8 @@
 
 #include "imgui_internal.h"
 
+using namespace tp;
+
 void StrokeApp::draw_explorer() {
 	using namespace ImGui;
 	objects_gui.oexplorer(200);
@@ -93,7 +95,7 @@ void StrokeApp::draw_toolbar(rectf rec) {
 	popup = ImGui::ButtonHoverPopupBegin("Layers", buttrec, popup_size);
 	if (popup) {
 		if (ImGui::Button("Add New", ImVec2(150, 30))) {
-			project->layers.PushBack(new drawlayer());
+			project->layers.pushBack(new drawlayer());
 		}
 
 		ImGui::Separator();
@@ -124,7 +126,7 @@ void StrokeApp::draw_toolbar(rectf rec) {
 				if (ImGui::Button("Delete", ImVec2(150, 30))) {
 					project->active_layer = lay.node()->prev ? lay.node()->prev->data : NULL;
 					delete lay.node()->data;
-					project->layers.DelNode(lay.node());
+					project->layers.delNode(lay.node());
 					ImGui::EndPopup();
 					ImGui::PopID();
 					break;

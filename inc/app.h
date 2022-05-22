@@ -21,11 +21,11 @@ class StrokeApp : public ImGui::CompleteApp {
 	ImGui::ImGuiObjectEditor objects_gui;
 	strokes_project* project = NULL;
 
-	halnf tablet_input_formater[5] = {0.5f, 0.f, 1.f, .5f};
+	tp::halnf tablet_input_formater[5] = {0.5f, 0.f, 1.f, .5f};
 
 	public:
 
-	StrokeApp(vec2f size = vec2f(1400, 800));
+	StrokeApp(tp::vec2f size = tp::vec2f(1400, 800));
 	~StrokeApp();
 
 	private:
@@ -39,6 +39,6 @@ class StrokeApp : public ImGui::CompleteApp {
 
 	void gui_draw();
 	void draw_explorer();
-	void draw_toolbar(rectf rect);
-	void draw_brush_properties(rectf rect);
+	void draw_toolbar(tp::rectf rect);
+	void draw_brush_properties(tp::rectf rect);
 };

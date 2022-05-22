@@ -11,15 +11,15 @@
 
 struct stroke_mesh {
 
-	Array<vec3f> vbo; // position
+	tp::Array<tp::vec3f> vbo; // position
 
-	ogl::shader* shader;
+	tp::ogl::shader* shader;
 	GLuint VertexArrayID;
 	GLuint vertexbuffer;
 	GLuint MatrixID;
 	GLuint ColorID;
 
-	rgba color = rgba(1);
+	tp::rgba color = tp::rgba(1);
 
 	void init();
 
@@ -27,14 +27,14 @@ struct stroke_mesh {
 	void operator=(const stroke_mesh& in);
 
 	void bind_buffers();
-	void draw_mesh(const mat4f& cammat);
+	void draw_mesh(const tp::mat4f& cammat);
 	~stroke_mesh();
 };
 
 struct stroke_point {
 
-	vec3f pos;
-	vec3f normal;
+	tp::vec3f pos;
+	tp::vec3f normal;
 	float thikness;
 
 	stroke_point();
@@ -42,55 +42,55 @@ struct stroke_point {
 
 struct stroke {
 
-	Array<stroke_point> points;
+	tp::Array<stroke_point> points;
 
 	stroke_mesh mesh;
 
-	void gen_quad(alni pidx, stroke_point* p1, stroke_point* p2, vec3f dir1, vec3f dir2);
-	vec3f split_dir(vec3f v1, vec3f v2, const vec3f& norm);
+	void gen_quad(tp::alni pidx, stroke_point* p1, stroke_point* p2, tp::vec3f dir1, tp::vec3f dir2);
+	tp::vec3f split_dir(tp::vec3f v1, tp::vec3f v2, const tp::vec3f& norm);
 
 	void gen_mesh();
 
-	void drawcall(const mat4f& cammat);
+	void drawcall(const tp::mat4f& cammat);
 	void add_point(const stroke_point& p);
 
-	void denoise_positions(alni passes) {
-		for (auto pass : range(passes)) {
-			for (auto pi : range(points.Len() - 2)) {
+	void denoise_positions(tp::alni passes) {
+		for (auto pass : tp::Range(passes)) {
+			for (auto pi : tp::Range(points.length() - 2)) {
 				points[pi + 1].pos = (points[pi].pos + points[pi + 2].pos) / 2.f;
 			}
 		}
 	}
 
-	void denoise_thickness(alni passes) {
-		for (auto pass : range(passes)) {
-			for (auto pi : range(points.Len() - 2)) {
+	void denoise_thickness(tp::alni passes) {
+		for (auto pass : tp::Range(passes)) {
+			for (auto pi : tp::Range(points.length() - 2)) {
 				points[pi + 1].thikness = (points[pi].thikness + points[pi + 2].thikness) / 2.f;
 			}
 		}
 	}
 
-	void reduce_nof_points(halnf pass_factor) {
-		if (points.length < 3) {
+	void reduce_nof_points(tp::halnf pass_factor) {
+		if (points.length() < 3) {
 			return;
 		}
 
-		list<stroke_point> passed_poits;
+		tp::List<stroke_point> passed_poits;
 
-		for (auto idx : range(points.length)) {
-			passed_poits.PushBack({points[idx]});
+		for (auto idx : tp::Range(points.length())) {
+			passed_poits.pushBack({points[idx]});
 		}
 
-		list_node<stroke_point>* min_node = NULL;
+		tp::list_node<stroke_point>* min_node = NULL;
 		do {
 			min_node = NULL;
-			halnf min_factor = pass_factor;
+			tp::halnf min_factor = pass_factor;
 
-			list_node<stroke_point>* iter = passed_poits.First()->next;
+			tp::list_node<stroke_point>* iter = passed_poits.first()->next;
 			for (; iter->next; iter = iter->next) {
-				vec3f dir1 = (iter->data.pos - iter->prev->data.pos).normalize();
-				vec3f dir2 = (iter->next->data.pos - iter->data.pos).normalize();
-				halnf factor = 1 - dir1.dot(dir2);
+				tp::vec3f dir1 = (iter->data.pos - iter->prev->data.pos).normalize();
+				tp::vec3f dir2 = (iter->next->data.pos - iter->data.pos).normalize();
+				tp::halnf factor = 1 - dir1.dot(dir2);
 
 				if (factor < min_factor) {
 					min_node = iter;
@@ -99,12 +99,12 @@ struct stroke {
 			}
 
 			if (min_node) {
-				passed_poits.DelNode(min_node);
+				passed_poits.delNode(min_node);
 			}
 		} while (min_node);
 
 		
-		points.Reserve(passed_poits.Len());
+		points.reserve(passed_poits.length());
 		for (auto point : passed_poits) {
 			points[point.Idx()] = point.Data();
 		}
@@ -113,29 +113,29 @@ struct stroke {
 
 class drawlayer {
 	public:
-	string name = "new layer";
-	list<stroke> strokes;
-	list<stroke> strokes_undo;
+	tp::string name = "new layer";
+	tp::List<stroke> strokes;
+	tp::List<stroke> strokes_undo;
 	bool hiden = false;
 
 	void undo();
 	void redo();
 
 	void add_stroke(const stroke& str);
-	void draw(const mat4f& cammat);
+	void draw(const tp::mat4f& cammat);
 
 	void clear_history() {
-		strokes_undo.Clear();
+		strokes_undo.free();
 	}
 
 	void clear_canvas() {
-		alni len = strokes.Len();
-		for (alni idx = 0; idx < len; idx++) {
+		tp::alni len = strokes.length();
+		for (tp::alni idx = 0; idx < len; idx++) {
 			undo();
 		}
 	}
 
-	void reduce_size(halnf pass_factor) {
+	void reduce_size(tp::halnf pass_factor) {
 		for (auto str : strokes) {
 			str.Data().reduce_nof_points(pass_factor);
 			str.Data().gen_mesh();
@@ -143,8 +143,8 @@ class drawlayer {
 	}
 
 	void clear() {
-		strokes.Clear();
-		strokes_undo.Clear();
+		strokes.free();
+		strokes_undo.free();
 	}
 };
 
@@ -154,27 +154,27 @@ class inputsmpler {
 	bool is_active = false;
 
 	stroke input;
-	halnf pressure;
+	tp::halnf pressure;
 
-	rgba stroke_col = rgba(0.77, 0.77, 0.77, 1);
+	tp::rgba stroke_col = tp::rgba(0.77, 0.77, 0.77, 1);
 
-	halnf screen_precision = 0.000f;
-	halnf precision = 0.002;
-	halnf screen_thikness = 0.01f;
-	halnf thickness = 0.04;
+	tp::halnf screen_precision = 0.000f;
+	tp::halnf precision = 0.002;
+	tp::halnf screen_thikness = 0.01f;
+	tp::halnf thickness = 0.04;
 
 	bool eraser = false;
-	halnf eraser_size = 0.1f;
+	tp::halnf eraser_size = 0.1f;
 
-	void add_point(const vec3f& pos, const vec3f& norm, float thickness);
-	bool passed(const vec3f& point);
-	void start(const vec2f& cpos, camera* cam);
-	void sample_util(const vec2f& cpos, camera* cam);
-	void erase_util(list<stroke>* pull, list<stroke>* undo, const vec2f& cpos, camera* cam);
-	void finish(const vec2f& cpos, camera* cam);
+	void add_point(const tp::vec3f& pos, const tp::vec3f& norm, float thickness);
+	bool passed(const tp::vec3f& point);
+	void start(const tp::vec2f& cpos, tp::Camera* cam);
+	void sample_util(const tp::vec2f& cpos, tp::Camera* cam);
+	void erase_util(tp::List<stroke>* pull, tp::List<stroke>* undo, const tp::vec2f& cpos, tp::Camera* cam);
+	void finish(const tp::vec2f& cpos, tp::Camera* cam);
 
-	void sample(list<stroke>* pull, list<stroke>* undo, vec2f curs, float pressure, camera* cam);
-	void draw(const mat4f& cammat);
+	void sample(tp::List<stroke>* pull, tp::List<stroke>* undo, tp::vec2f curs, float pressure, tp::Camera* cam);
+	void draw(const tp::mat4f& cammat);
 
 	bool active_state();
 	bool has_input();
@@ -184,24 +184,24 @@ class inputsmpler {
 
 struct strokes_project {
 
-	camera cam;
+	tp::Camera cam;
 	drawlayer* active_layer = NULL;
-	list<drawlayer*> layers;
+	tp::List<drawlayer*> layers;
 	inputsmpler sampler;
-	rgba canvas_color = rgba(0.22f, 0.22f, 0.25f, 1.f);
+	tp::rgba canvas_color = tp::rgba(0.22f, 0.22f, 0.25f, 1.f);
 
-	halni denoise_passes = 1;
-	halni denoise_passes_thikness = 3;
+	tp::halni denoise_passes = 1;
+	tp::halni denoise_passes_thikness = 3;
 	bool auto_reduction = true;
-	halnf pass_factor = halnf(0.001);
+	tp::halnf pass_factor = tp::halnf(0.001);
 
 	strokes_project() {
 		cam.lookat({0, 0, 0}, {100, 0, 0}, {0, 0, 1});
 	}
 
 	drawlayer* get_base_layer() {
-		if (!layers.Len()) {
-			layers.PushBack(new drawlayer());
+		if (!layers.length()) {
+			layers.pushBack(new drawlayer());
 		}
 		return layers[0];
 	}
@@ -212,9 +212,9 @@ struct strokes_project {
 		}
 	}
 
-	alni save_size();
-	void save(File& file);
-	void load(File& file);
+	tp::alni save_size();
+	void save(tp::File& file);
+	void load(tp::File& file);
 
 	~strokes_project() {
 		for (auto lay : layers) {

@@ -1,6 +1,9 @@
 
 #include "strokesobject.h"
 
+using namespace tp;
+using namespace obj;
+
 void StrokesObject::constructor(StrokesObject* self) {
 	new (&self->project) strokes_project();
 }
@@ -26,7 +29,7 @@ static void load(File& file_self, StrokesObject* self) {
 	self->project.load(file_self);
 }
 
-struct ObjectType StrokesObjectType = {
+struct ObjectType obj::StrokesObjectType = {
 	.base = NULL,
 	.constructor = (object_constructor) StrokesObject::constructor,
 	.destructor = (object_destructor) StrokesObject::destructor,

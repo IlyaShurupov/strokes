@@ -6,49 +6,50 @@ struct ProjectInfo {
 	char name[10] = {0};
 	char version[10] = {0};
 	
-	void init(alni v) {
-		string version_s(v);
-		memcp(name, "strokes", slen("strokes"));
-		memcp(version, version_s.cstr(), version_s.size());
+	void init(tp::alni v) {
+		tp::string version_s(v);
+		tp::memcp(name, "strokes", tp::slen("strokes"));
+		tp::memcp(version, version_s.cstr(), version_s.size());
 	}
 };
 
 namespace StrokesVersion0 {
 
-	alni save_size(strokes_project* proj) {
-		alni out = 0;
-		out += sizeof(camera);
-		out += sizeof(rgba);
+	tp::alni save_size(strokes_project* proj) {
+		tp::alni out = 0;
+		out += sizeof(tp::Camera);
+		out += sizeof(tp::rgba);
 
-		out += sizeof(alni);
+		out += sizeof(tp::alni);
 		for (auto layer : proj->layers) {
 			for (auto stiter : layer->strokes) {
 				stroke* str = &stiter.Data();
 				
-				out += sizeof(rgba);
+				out += sizeof(tp::rgba);
 
-				out += sizeof(alni);
-				out += str->points.length * sizeof(stroke_point);
+				out += sizeof(tp::alni);
+				out += str->points.length() * sizeof(stroke_point);
 			}
 		}
 		return out;
 	}
 
-	void save(File& file, strokes_project* proj) {
+	void save(tp::File& file, strokes_project* proj) {
 
-		file.write<camera>(&proj->cam);
-		file.write<rgba>(&proj->canvas_color);
+		file.write<tp::Camera>(&proj->cam);
+		file.write<tp::rgba>(&proj->canvas_color);
 
 		drawlayer base_layer;
 		proj->append_layers(&base_layer);
 
-		alni len = base_layer.strokes.Len();
-		file.write<alni>(&len);
+		tp::alni len = base_layer.strokes.length();
+		file.write<tp::alni>(&len);
 		for (auto stiter : base_layer.strokes) {
 			stroke* str = &stiter.Data();
 
-			file.write<alni>(&str->points.length);
-			file.write<rgba>(&str->mesh.color);
+			tp::alni length = str->points.length();
+			file.write<tp::alni>(&length);
+			file.write<tp::rgba>(&str->mesh.color);
 
 			for (auto piter : str->points) {
 				file.write<stroke_point>(&piter.data());
@@ -56,23 +57,23 @@ namespace StrokesVersion0 {
 		}
 	}
 
-	void load(File& file, strokes_project* proj) {
-		file.read<camera>(&proj->cam);
+	void load(tp::File& file, strokes_project* proj) {
+		file.read<tp::Camera>(&proj->cam);
 
-		file.read<rgba>(&proj->canvas_color);
+		file.read<tp::rgba>(&proj->canvas_color);
 
 		drawlayer* base = proj->get_base_layer();
 
-		alni len;
-		file.read<alni>(&len);
+		tp::alni len;
+		file.read<tp::alni>(&len);
 
-		for (alni str_idx = 0; str_idx < len; str_idx++) {
+		for (tp::alni str_idx = 0; str_idx < len; str_idx++) {
 			stroke str = stroke();
 
-			alni p_len; file.read<alni>(&p_len);
-			rgba color; file.read<rgba>(&color);
+			tp::alni p_len; file.read<tp::alni>(&p_len);
+			tp::rgba color; file.read<tp::rgba>(&color);
 
-			str.points.Reserve(p_len);
+			str.points.reserve(p_len);
 			for (auto piter : str.points) {
 				file.read<stroke_point>(&piter.data());
 			}
@@ -85,49 +86,50 @@ namespace StrokesVersion0 {
 
 namespace StrokesVersion1 {
 
-	alni save_size(strokes_project* proj) {
-		alni out = 0;
-		out += sizeof(camera);
-		out += sizeof(halnf);
-		out += sizeof(halnf);
-		out += sizeof(rgba);
+	tp::alni save_size(strokes_project* proj) {
+		tp::alni out = 0;
+		out += sizeof(tp::Camera);
+		out += sizeof(tp::halnf);
+		out += sizeof(tp::halnf);
+		out += sizeof(tp::rgba);
 
-		out += sizeof(alni);
+		out += sizeof(tp::alni);
 		for (auto layer : proj->layers) {
 			out += layer->name.save_size();
 			out += sizeof(bool);
 			for (auto stiter : layer->strokes) {
 				stroke* str = &stiter.Data();
-				out += sizeof(rgba);
-				out += sizeof(alni);
-				out += str->points.length * sizeof(stroke_point);
+				out += sizeof(tp::rgba);
+				out += sizeof(tp::alni);
+				out += str->points.length() * sizeof(stroke_point);
 			}
 		}
 		return out;
 	}
 
-	void save(File& file, strokes_project* proj) {
+	void save(tp::File& file, strokes_project* proj) {
 
-		file.write<camera>(&proj->cam);
-		file.write<halnf>(&proj->sampler.eraser_size);
-		file.write<halnf>(&proj->sampler.screen_thikness);
-		file.write<rgba>(&proj->canvas_color);
+		file.write<tp::Camera>(&proj->cam);
+		file.write<tp::halnf>(&proj->sampler.eraser_size);
+		file.write<tp::halnf>(&proj->sampler.screen_thikness);
+		file.write<tp::rgba>(&proj->canvas_color);
 
-		alni lay_len = proj->layers.Len();
-		file.write<alni>(&lay_len);
+		tp::alni lay_len = proj->layers.length();
+		file.write<tp::alni>(&lay_len);
 		for (auto layer : proj->layers) {
 			layer->name.save(&file);
 
 			file.write<bool>(&layer->hiden);
 
-			alni len = layer->strokes.Len();
-			file.write<alni>(&len);
+			tp::alni len = layer->strokes.length();
+			file.write<tp::alni>(&len);
 			for (auto stiter : layer->strokes) {
 				stroke* str = &stiter.Data();
 
-				file.write<rgba>(&str->mesh.color);
+				file.write<tp::rgba>(&str->mesh.color);
 
-				file.write<alni>(&str->points.length);
+				tp::alni length = str->points.length();
+				file.write<tp::alni>(&length);
 				for (auto piter : str->points) {
 					file.write<stroke_point>(&piter.data());
 				}
@@ -135,34 +137,34 @@ namespace StrokesVersion1 {
 		}
 	}
 
-	void load(File& file, strokes_project* proj) {
-		file.read<camera>(&proj->cam);
+	void load(tp::File& file, strokes_project* proj) {
+		file.read<tp::Camera>(&proj->cam);
 
-		file.read<halnf>(&proj->sampler.eraser_size);
-		file.read<halnf>(&proj->sampler.screen_thikness);
-		file.read<rgba>(&proj->canvas_color);
+		file.read<tp::halnf>(&proj->sampler.eraser_size);
+		file.read<tp::halnf>(&proj->sampler.screen_thikness);
+		file.read<tp::rgba>(&proj->canvas_color);
 
-		alni layers_len;
-		file.read<alni>(&layers_len);
-		for (alni str_idx = 0; str_idx < layers_len; str_idx++) {
+		tp::alni layers_len;
+		file.read<tp::alni>(&layers_len);
+		for (tp::alni str_idx = 0; str_idx < layers_len; str_idx++) {
 
-			string key; key.load(&file);
+			tp::string key; key.load(&file);
 			drawlayer* layer = new drawlayer();
 			layer->name = key;
-			proj->layers.PushBack(layer);
+			proj->layers.pushBack(layer);
 
 			file.read<bool>(&layer->hiden);
 
-			alni len;
-			file.read<alni>(&len);
+			tp::alni len;
+			file.read<tp::alni>(&len);
 
-			for (alni str_idx = 0; str_idx < len; str_idx++) {
+			for (tp::alni str_idx = 0; str_idx < len; str_idx++) {
 				stroke str = stroke();
 
-				rgba color; file.read<rgba>(&color);
+				tp::rgba color; file.read<tp::rgba>(&color);
 
-				alni p_len; file.read<alni>(&p_len);
-				str.points.Reserve(p_len);
+				tp::alni p_len; file.read<tp::alni>(&p_len);
+				str.points.reserve(p_len);
 				for (auto piter : str.points) {
 					file.read<stroke_point>(&piter.data());
 				}

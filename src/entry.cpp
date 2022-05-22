@@ -1,6 +1,9 @@
 
 #include "app.h"
 
+using namespace tp;
+using namespace obj;
+
 int main() {
 
 	objects_init();
