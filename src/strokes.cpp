@@ -196,7 +196,7 @@ void drawlayer::add_stroke(const stroke& str) {
 }
 
 void drawlayer::draw(const mat4f& cammat) {
-	for (list_node<stroke>* str = strokes.last(); str; str = str->prev) {
+	for (ListNode<stroke>* str = strokes.last(); str; str = str->prev) {
 		str->data.drawcall(cammat);
 	}
 }
@@ -231,7 +231,7 @@ void inputsmpler::sample_util(const vec2f& cpos, Camera* cam) {
 
 void inputsmpler::erase_util(List<stroke>* pull, List<stroke>* undo, const vec2f& cpos, Camera* cam) {
 
-	list_node<stroke>* str = pull->first();
+	ListNode<stroke>* str = pull->first();
 	while (str) {
 		bool remove = false;
 
@@ -243,7 +243,7 @@ void inputsmpler::erase_util(List<stroke>* pull, List<stroke>* undo, const vec2f
 		}
 
 		if (remove) {
-			list_node<stroke>* tmp = str->next;
+			ListNode<stroke>* tmp = str->next;
 			undo->pushBack(str->data);
 			pull->delNode(str);
 			str = tmp;
@@ -257,6 +257,7 @@ void inputsmpler::finish(const vec2f& cpos, Camera* cam) {
 	if (input.points.length() <= 1) {
 		input.points.free();
 	} else {
+		input.points[input.points.length() - 1].thikness = 0.001f;
 		cam->offset_target(0.0001);
 	}
 }
@@ -347,7 +348,7 @@ void strokes_project::load(File& file) {
 		return;
 	}
 
-	alni version = string(head.version);
+	alni version = alni(string(head.version));
 	if (version > 1 || version < 0) {
 		return;
 	}

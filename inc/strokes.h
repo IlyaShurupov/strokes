@@ -81,12 +81,12 @@ struct stroke {
 			passed_poits.pushBack({points[idx]});
 		}
 
-		tp::list_node<stroke_point>* min_node = NULL;
+		tp::ListNode<stroke_point>* min_node = NULL;
 		do {
 			min_node = NULL;
 			tp::halnf min_factor = pass_factor;
 
-			tp::list_node<stroke_point>* iter = passed_poits.first()->next;
+			tp::ListNode<stroke_point>* iter = passed_poits.first()->next;
 			for (; iter->next; iter = iter->next) {
 				tp::vec3f dir1 = (iter->data.pos - iter->prev->data.pos).normalize();
 				tp::vec3f dir2 = (iter->next->data.pos - iter->data.pos).normalize();
@@ -106,7 +106,7 @@ struct stroke {
 		
 		points.reserve(passed_poits.length());
 		for (auto point : passed_poits) {
-			points[point.Idx()] = point.Data();
+			points[point.idx()] = point.data();
 		}
 	}
 };
@@ -137,8 +137,8 @@ class drawlayer {
 
 	void reduce_size(tp::halnf pass_factor) {
 		for (auto str : strokes) {
-			str.Data().reduce_nof_points(pass_factor);
-			str.Data().gen_mesh();
+			str.data().reduce_nof_points(pass_factor);
+			str.data().gen_mesh();
 		}
 	}
 
@@ -212,13 +212,43 @@ struct strokes_project {
 		}
 	}
 
+	void pickTargetLength(const tp::vec2f& cur) {
+		using namespace tp;
+		stroke_point* target_point = NULL;
+		alnf min_length = FLT_MAX;
+		alnf min_tollerance = 0.05f;
+
+		for (auto lay : layers) {
+			for (auto stroke : lay->strokes) {
+				for (auto pnt : stroke.data().points) {
+
+					alnf tollerance = (cam.project(pnt.data().pos) - cur).length();
+					alnf len = (pnt->pos - cam.get_pos()).dot(cam.get_fw());
+
+					alnf toll2 = abs(min_tollerance - tollerance);
+					bool selected = (toll2 < 0.01) ? (min_length > len) : (min_tollerance > tollerance);
+
+					if (selected) {
+						target_point = &pnt.data();
+						min_length = len;
+						min_tollerance = tollerance;
+					}
+				}
+			}
+		}
+
+		if (target_point) {
+			cam.lookat(cam.get_pos() + (cam.get_fw() * min_length), cam.get_pos(), cam.get_up());
+		}
+	}
+
 	tp::alni save_size();
 	void save(tp::File& file);
 	void load(tp::File& file);
 
 	~strokes_project() {
 		for (auto lay : layers) {
-			delete lay.Data();
+			delete lay.data();
 		}
 	}
 };

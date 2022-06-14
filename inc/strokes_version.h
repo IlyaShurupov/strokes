@@ -23,7 +23,7 @@ namespace StrokesVersion0 {
 		out += sizeof(tp::alni);
 		for (auto layer : proj->layers) {
 			for (auto stiter : layer->strokes) {
-				stroke* str = &stiter.Data();
+				stroke* str = &stiter.data();
 				
 				out += sizeof(tp::rgba);
 
@@ -45,7 +45,7 @@ namespace StrokesVersion0 {
 		tp::alni len = base_layer.strokes.length();
 		file.write<tp::alni>(&len);
 		for (auto stiter : base_layer.strokes) {
-			stroke* str = &stiter.Data();
+			stroke* str = &stiter.data();
 
 			tp::alni length = str->points.length();
 			file.write<tp::alni>(&length);
@@ -97,8 +97,9 @@ namespace StrokesVersion1 {
 		for (auto layer : proj->layers) {
 			out += layer->name.save_size();
 			out += sizeof(bool);
+			out += sizeof(tp::alni);
 			for (auto stiter : layer->strokes) {
-				stroke* str = &stiter.Data();
+				stroke* str = &stiter.data();
 				out += sizeof(tp::rgba);
 				out += sizeof(tp::alni);
 				out += str->points.length() * sizeof(stroke_point);
@@ -124,7 +125,7 @@ namespace StrokesVersion1 {
 			tp::alni len = layer->strokes.length();
 			file.write<tp::alni>(&len);
 			for (auto stiter : layer->strokes) {
-				stroke* str = &stiter.Data();
+				stroke* str = &stiter.data();
 
 				file.write<tp::rgba>(&str->mesh.color);
 

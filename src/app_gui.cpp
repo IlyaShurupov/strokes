@@ -101,15 +101,15 @@ void StrokeApp::draw_toolbar(rectf rec) {
 		ImGui::Separator();
 
 		for (auto lay : project->layers) {
-			ImGui::PushID((int) lay.Idx());
+			ImGui::PushID((int) lay.idx());
 			
-			bool higlight = lay.Data() == project->active_layer;
+			bool higlight = lay.data() == project->active_layer;
 			if (higlight) {
 				ImGui::PushStyleColor(ImGuiCol_Button, GImGui->Style.Colors[ImGuiCol_ButtonActive]);
 			}
 
 			if (ImGui::Button(lay->name.cstr(), ImVec2(100, 30))) {
-				project->active_layer = lay.Data();
+				project->active_layer = lay.data();
 			}
 
 			if (higlight) {
@@ -132,10 +132,10 @@ void StrokeApp::draw_toolbar(rectf rec) {
 					break;
 				}
 				if (lay.node()->prev && ImGui::Button("Move Up", ImVec2(150, 30))) {
-					swap(lay.node()->prev->data, lay.Data());
+					swap(lay.node()->prev->data, lay.data());
 				}
 				if (lay.node()->next && ImGui::Button("Move Down", ImVec2(150, 30))) {
-					swap(lay.node()->next->data, lay.Data());
+					swap(lay.node()->next->data, lay.data());
 				}
 				ImGui::EndPopup();
 			}

@@ -85,16 +85,28 @@ void StrokeApp::camera_controller() {
 	vec2f delta = prevcur - cur;
 	vec3f target = project->cam.get_target();
 
-	if (glfwGetMouseButton(window.geth(), GLFW_MOUSE_BUTTON_3) == GLFW_PRESS) {
+	if (glfwGetKey(window.geth(), GLFW_KEY_LEFT_ALT) == GLFW_PRESS) {
 		project->cam.rotate(delta.x * 5, delta.y * 5);
 	}
 
-	if (glfwGetMouseButton(window.geth(), GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {
+	if (glfwGetKey(window.geth(), GLFW_KEY_Z) == GLFW_PRESS) {
 		project->cam.zoom((prevcur.y + 1.f) / (cur.y + 1.f));
 	}
 
 	if (glfwGetKey(window.geth(), GLFW_KEY_SPACE) == GLFW_PRESS) {
 		project->cam.move(cur, prevcur);
+	}
+
+	if (glfwGetKey(window.geth(), GLFW_KEY_X) == GLFW_PRESS) {
+		project->pickTargetLength(cur);
+	}
+
+	if (glfwGetKey(window.geth(), GLFW_KEY_B) == GLFW_PRESS) {
+		project->sampler.eraser = false;
+	}
+
+	if (glfwGetKey(window.geth(), GLFW_KEY_E) == GLFW_PRESS) {
+		project->sampler.eraser = true;
 	}
 
 	project->cam.set_ratio(window.aspect_ratio());
