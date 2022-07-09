@@ -1,6 +1,7 @@
 # Strokes - Sketching app
 
-# Building
+# Building - currently windows only with MSVC build
+
 **Parent** directory must contain folowing additional git repositories: (see [Root](https://github.com/IlyaShurupov/root.git))
 
   - [Types](https://github.com/IlyaShurupov/Types.git)
