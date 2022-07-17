@@ -13,7 +13,7 @@ using namespace tp;
 void StrokeApp::draw_explorer() {
 	using namespace ImGui;
 	objects_gui.oexplorer(200);
-	if (SubMenuBegin("Object Info", 1)) {
+	if (SubMenuBegin("Type Info", 1)) {
 		objects_gui.oproperties(objects_gui.active->type);
 		SubMenuEnd(1);
 	}
@@ -80,7 +80,7 @@ void StrokeApp::draw_toolbar(rectf rec) {
 	ImGui::SetNextWindowSize(ImVec2(rec.z, rec.w));
 	ImGui::Begin("ToolBar", 0, ImGui::frame_window);
 
-	vec2f popup_size = vec2f(200, 200);
+	vec2f popup_size = vec2f(200, 300);
 
 	auto popup = ImGui::ButtonHoverPopupBegin("Explore", buttrec, popup_size);
 	if (popup) { draw_explorer(); }
@@ -156,7 +156,7 @@ void StrokeApp::draw_toolbar(rectf rec) {
 	}
 
 	ImGui::SameLine();
-	popup = ImGui::ButtonHoverPopupBegin("Hist", buttrec, vec2f(100));
+	popup = ImGui::ButtonHoverPopupBegin("Hist", buttrec, vec2f(200, 300));
 	if (popup) {
 		if (ImGui::Button("Undo", ImVec2(100, 30))) {
 			project->active_layer->undo();
@@ -172,13 +172,15 @@ void StrokeApp::draw_toolbar(rectf rec) {
 
 	ImGui::SameLine();
 	popup = ImGui::ButtonHoverPopupBegin("Tool", buttrec, popup_size);
-	if (popup) { draw_brush_properties(rectf(0, 0, 300, 300)); }
+	if (popup) { draw_brush_properties(rectf(0, 0, 200, 600)); }
 	ImGui::HoverPopupEnd(popup);
 
 
 	ImGui::SameLine();
 	popup = ImGui::ButtonHoverPopupBegin("Proj", buttrec, popup_size);
 	if (popup) {
+
+		ImGui::SetNextItemWidth(popup_size.x / 2.f);
 		int flags = ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoSmallPreview | ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoInputs;
 		ImGui::ColorPicker4("Background Color", &project->canvas_color.r, flags);
 
@@ -200,7 +202,7 @@ void StrokeApp::draw_toolbar(rectf rec) {
 	HoverPopupEnd(popup);
 
 	ImGui::SameLine();
-	popup = ImGui::ButtonHoverPopupBegin("Cam", buttrec, vec2f(100));
+	popup = ImGui::ButtonHoverPopupBegin("Cam", buttrec, vec2f(200, 300));
 	if (popup) {
 		if (ImGui::Button("Reset", ImVec2(100, 30))) {
 			project->cam.lookat({0, 0, 0}, {100, 0, 0}, {0, 0, 1});

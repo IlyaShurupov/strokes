@@ -8,7 +8,7 @@ int main() {
 
 	objects_init();
 	primitives_define_types();
-	NDO->define(&StrokesObjectType);
+	NDO->define(&StrokesObject::TypeData);
 
 	{
 		StrokeApp app;
