@@ -8,6 +8,7 @@
 #include "list.h"
 #include "map.h"
 #include "topology.h"
+#include "strings.h"
 
 struct stroke_mesh {
 

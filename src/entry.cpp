@@ -6,16 +6,22 @@ using namespace obj;
 
 int main() {
 
-	objects_init();
-	primitives_define_types();
-	NDO->define(&StrokesObject::TypeData);
-
+	alloc_init();
 	{
-		StrokeApp app;
-		app.Run();
-	}
+	
+		objects_init();
+		primitives_define_types();
+		NDO->define(&StrokesObject::TypeData);
 
-	objects_finalize();
+		{
+			StrokeApp app;
+			app.Run();
+		}
+
+		objects_finalize();
+	}
+	
+	alloc_uninit();
 	return 0;
 }
 
